@@ -39,12 +39,17 @@ Reglas obligatorias:
 3. Los ciudadanos usan palabras coloquiales: "orinar en la calle" equivale a "necesidades \
 fisiológicas en el espacio público", "parte" a "comparendo", "pelea" a "riña". Si el CONTEXTO \
 trata el mismo hecho con lenguaje jurídico, úsalo para responder.
-4. Si el CONTEXTO de verdad no permite responder la pregunta, responde exactamente: \
+4. Si el CONTEXTO responde la pregunta solo en parte, responde lo que sí está (con su cita) y \
+aclara qué parte no aparece. Por ejemplo, si el contexto dice qué tipo de multa aplica pero no su \
+valor, di el tipo de multa. El Artículo 180 define el valor de cada tipo de multa general.
+5. Solo si el CONTEXTO no tiene NADA relacionado con la pregunta, responde exactamente: \
 "{NO_ENCONTRADO}" y no agregues nada inventado.
-5. Si un fragmento tiene vigencia distinta de "vigente", adviértelo en la respuesta.
-6. Responde en español claro y sencillo, máximo 2 párrafos cortos, pensando en un ciudadano sin \
+6. Si un fragmento tiene vigencia distinta de "vigente", adviértelo en la respuesta.
+7. Responde en español claro y sencillo, máximo 2 párrafos cortos, pensando en un ciudadano sin \
 formación jurídica.
-7. No des asesoría jurídica personalizada; si te la piden, aclara que eres una herramienta informativa."""
+8. No des asesoría jurídica personalizada; si te la piden, aclara que eres una herramienta informativa."""
+
+ARTICULO_MULTAS = 180  # define el valor de las multas generales tipo 1 a 4
 
 # Glosario de expresiones coloquiales → términos de la ley (expansión de consultas).
 # Amplíenlo con el análisis de la Fase 2 (frecuencias, KWIC).
@@ -90,7 +95,6 @@ SINONIMOS = {
     "navaja": "armas elementos cortantes",
     "colarse": "transporte público",
     "no pago": "no pago de multas",
-    "cuanto es la multa": "multa general tipo",
 }
 
 STOPWORDS = set("""a al algo ante con contra cual cuando de del desde donde e el ella ellas ellos en
@@ -100,7 +104,7 @@ puedo puede pueden debo hacer pasa""".split())
 
 
 def normalizar(texto):
-    texto = unicodedata.normalize("NFD", texto.lower())
+    texto = unicodedata.normalize("NFKD", texto.lower())  # NFKD también separa ligaduras (ﬁ → fi)
     return "".join(c for c in texto if unicodedata.category(c) != "Mn")
 
 
@@ -163,13 +167,40 @@ class Motor:
         if not m:
             return []
         n = m.group(1)
-        patron = re.compile(rf"numerales?\b[^.]{{0,60}}\b{n}\b", re.IGNORECASE)
+        patron = re.compile(rf"numeral(?:es)?\b[^.]{{0,80}}\b{n}\b", re.IGNORECASE)
         return [i for i, f in enumerate(self.fragmentos)
                 if f["articulo"] == frag["articulo"] and f["tipo"] == "paragrafo" and patron.search(f["texto"])]
+
+    def _numerales_del_paragrafo(self, frag, puntajes_bm25):
+        """Si se recuperó un parágrafo (p. ej. la tabla de multas), trae los numerales del mismo
+        artículo que más se parecen a la pregunta, para que la IA sepa qué comportamiento es cuál."""
+        if frag["tipo"] != "paragrafo":
+            return []
+        hermanos = [i for i, f in enumerate(self.fragmentos)
+                    if f["articulo"] == frag["articulo"] and f["tipo"] == "numeral" and puntajes_bm25[i] > 0]
+        hermanos.sort(key=lambda i: puntajes_bm25[i], reverse=True)
+        return hermanos[:2]
+
+    def _medida_de_numeral(self, frag):
+        """Busca en la tabla del parágrafo del mismo artículo la fila de este numeral.
+        Ej.: Art. 140, numeral 11 → 'Multa General tipo 4; Participación en programa comunitario...'"""
+        m = re.search(r"numeral (\d+)", frag["ref"])
+        if not m:
+            return None
+        n = m.group(1)
+        fila = re.compile(rf"\bNumeral\s+{n}\b\s*(.+?)(?=\bNumeral\s+\d+\b|\(Par[áa]grafo|$)", re.IGNORECASE)
+        for f in self.fragmentos:
+            if f["articulo"] == frag["articulo"] and f["tipo"] == "paragrafo":
+                encontrado = fila.search(f["texto"])
+                if encontrado and re.search(r"multa|medida|suspensi|destrucci|remoci|participaci|amonestaci",
+                                            encontrado.group(1), re.IGNORECASE):
+                    return f"{encontrado.group(1).strip()} ({f['ref'].replace('Artículo', 'Art.')})"
+        return None
 
     def buscar(self, pregunta, k=8, modo="hibrido"):
         consulta, extras = expandir_consulta(pregunta)
         candidatos = 40
+        puntajes_bm25 = self.bm25.get_scores(tokenizar(consulta))
 
         if modo == "semantico":
             ranking = self._semantico(consulta, k)
@@ -193,13 +224,21 @@ class Motor:
             resultados.append({
                 "ref": f["ref"], "articulo": f["articulo"], "epigrafe": f["epigrafe"],
                 "texto": f["texto"], "vigencia": f["vigencia"],
+                "medida_correctiva": self._medida_de_numeral(f),
                 "puntaje": round(puntaje, 4), "origen": origen,
             })
 
         for i, puntaje in ranking:
             agregar(i, puntaje, modo)
-            for j in self._relacionados(self.fragmentos[i]):
+            for j in self._relacionados(self.fragmentos[i]) + \
+                     self._numerales_del_paragrafo(self.fragmentos[i], puntajes_bm25):
                 agregar(j, 0.0, "relacionado")
+
+        # si alguna fuente menciona "multa general tipo X", se agrega el Art. 180 que define su valor
+        if any(re.search(r"multa general tipo", normalizar(r["texto"])) for r in resultados):
+            for j, f in enumerate(self.fragmentos):
+                if f["articulo"] == ARTICULO_MULTAS and f["tipo"] in ("inciso", "numeral", "articulo"):
+                    agregar(j, 0.0, "relacionado")
         self.ultima_expansion = extras
         return resultados
 
@@ -208,7 +247,10 @@ class Motor:
     def armar_contexto(fragmentos):
         bloques = []
         for i, f in enumerate(fragmentos, 1):
-            bloques.append(f"[{i}] {f['ref']} — {f['epigrafe']} (vigencia: {f['vigencia']})\n{f['texto']}")
+            bloque = f"[{i}] {f['ref']} — {f['epigrafe']} (vigencia: {f['vigencia']})\n{f['texto']}"
+            if f.get("medida_correctiva"):
+                bloque += f"\nMEDIDA CORRECTIVA PARA ESTE NUMERAL: {f['medida_correctiva']}"
+            bloques.append(bloque)
         return "\n\n".join(bloques)
 
     def preguntar(self, pregunta, k=8, modo="hibrido"):
@@ -227,6 +269,7 @@ class Motor:
             r = self.cliente_llm.chat.completions.create(
                 model=self.modelo_llm, messages=mensajes, temperature=0.1, max_tokens=2000)
             respuesta = (r.choices[0].message.content or "").strip() or NO_ENCONTRADO
+            respuesta = re.sub(r"\s*【[^】]*】", "", respuesta)  # basura de citas internas de GPT-OSS
 
         return {
             "pregunta": pregunta,
@@ -267,6 +310,8 @@ def main():
     for f in r["fuentes"]:
         marca = "  ↳" if f["origen"] == "relacionado" else f"{f['puntaje']:.3f}"
         print(f"{marca:>6}  {f['ref']} — {f['epigrafe']}")
+        if f.get("medida_correctiva"):
+            print(f"          medida: {f['medida_correctiva'][:110]}")
     print(f"\n{r['tiempo_ms']} ms")
 
 

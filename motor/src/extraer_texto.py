@@ -14,6 +14,7 @@ SALIDA = Path(__file__).resolve().parents[1] / "data" / "procesado" / "ley1801_l
 RUIDO = [
     r"^Departamento Administrativo de la Funci[oó]n P[uú]blica\s*$",
     r"^Ley 1801 de 2016\s+\d+\s+EVA - Gestor Normativo\s*$",
+    r"^Ley 1801 de 2016(\s+\d+)?\s*$",  # encabezado suelto que se cuela entre páginas
     r"^EVA - Gestor Normativo\s*$",
     r"^Fecha y hora de creaci[oó]n:.*$",
     r"^Los datos publicados tienen prop[oó]sitos exclusivamente informativos.*$",
@@ -41,8 +42,15 @@ def leer_html(ruta):
     return sopa.get_text("\n")
 
 
+# ligaduras tipográficas del PDF: "ﬁsiológicas" (1 carácter) → "fisiológicas" (2 letras)
+LIGADURAS = {"\ufb00": "ff", "\ufb01": "fi", "\ufb02": "fl", "\ufb03": "ffi", "\ufb04": "ffl",
+             "\ufb05": "st", "\ufb06": "st"}
+
+
 def limpiar(texto):
     texto = unicodedata.normalize("NFC", texto)
+    for lig, letras in LIGADURAS.items():
+        texto = texto.replace(lig, letras)
     texto = texto.replace(" ", " ").replace("­", "").replace("�", "")
     texto = re.sub(r"[​-‏﻿]", "", texto)
     lineas = []
