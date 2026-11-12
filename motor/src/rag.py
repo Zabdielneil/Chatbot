@@ -103,7 +103,7 @@ class Motor:
                                             f"PREGUNTA: {pregunta}"},
             ]
             r = self.cliente_llm.chat.completions.create(
-                model=self.modelo_llm, messages=mensajes, temperature=0.1, max_tokens=600)
+                                model=self.modelo_llm, messages=mensajes, temperature=0.1, max_tokens=2000)
             respuesta = r.choices[0].message.content.strip()
 
         return {
