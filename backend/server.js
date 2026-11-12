@@ -38,7 +38,7 @@ app.use(
 // ---------- chat ----------
 app.post("/api/chat", async (req, res) => {
   const pregunta = (req.body?.pregunta || "").trim();
-  const k = Number(req.body?.k) || 5;
+    const k = Number(req.body?.k) || 8;
   if (pregunta.length < 3) {
     return res.status(400).json({ error: "Escribe una pregunta de al menos 3 caracteres." });
   }

@@ -10,6 +10,8 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -32,7 +34,8 @@ motor = Motor()
 class Consulta(BaseModel):
     pregunta: str = Field(..., min_length=3, max_length=500,
                           examples=["¿Cuánto es la multa por orinar en la vía pública?"])
-    k: int = Field(5, ge=1, le=15)
+    k: int = Field(8, ge=1, le=15)
+    modo: Literal["hibrido", "semantico", "lexico"] = "hibrido"
 
 
 @app.get("/health")
@@ -44,13 +47,13 @@ def health():
 @app.post("/buscar")
 def buscar(c: Consulta):
     """Solo recuperación: devuelve los k fragmentos más parecidos (sin modelo de IA)."""
-    return {"pregunta": c.pregunta, "fuentes": motor.buscar(c.pregunta, c.k)}
+    return {"pregunta": c.pregunta, "fuentes": motor.buscar(c.pregunta, c.k, c.modo)}
 
 
 @app.post("/query")
 def query(c: Consulta):
     """RAG completo: recupera los fragmentos y genera la respuesta citando artículos."""
     try:
-        return motor.preguntar(c.pregunta, c.k)
+        return motor.preguntar(c.pregunta, c.k, c.modo)
     except Exception as e:  # p. ej. clave inválida o límite de la API del LLM
         raise HTTPException(status_code=502, detail=f"Error llamando al modelo de IA: {e}")
