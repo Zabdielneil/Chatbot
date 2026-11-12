@@ -1,0 +1,6 @@
+.env
+.venv/
+__pycache__/
+node_modules/
+*.faiss
+.ipynb_checkpoints/
