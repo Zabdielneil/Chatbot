@@ -2,5 +2,7 @@
 .venv/
 __pycache__/
 node_modules/
-*.faiss
 .ipynb_checkpoints/
+# se regeneran con los scripts
+motor/data/indice/
+motor/data/pendientes/
