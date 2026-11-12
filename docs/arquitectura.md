@@ -25,11 +25,16 @@ flowchart LR
 
     subgraph MOTOR[Motor documental · Python]
         API[FastAPI]
+        GLO[Glosario coloquial<br/>expansión de consulta]
         EMB[Embeddings<br/>paraphrase-multilingual-MiniLM-L12-v2]
         IDX[(Índice FAISS<br/>IndexFlatIP · coseno)]
+        BM[(BM25<br/>palabras clave)]
+        RRF[Fusión RRF<br/>+ parágrafos y medidas relacionadas<br/>+ Art. 180 valores de multa]
         PROMPT[Prompt RAG<br/>solo contexto + citar artículos]
-        API --> EMB --> IDX
-        IDX -- "top-k fragmentos" --> PROMPT
+        API --> GLO
+        GLO --> EMB --> IDX --> RRF
+        GLO --> BM --> RRF
+        RRF -- "top-k fragmentos" --> PROMPT
     end
 
     PROMPT -- "contexto + pregunta" --> LLM[[Modelo de IA vía API<br/>Groq / Gemini / OpenAI]]
@@ -50,7 +55,9 @@ flowchart LR
 |---|---|---|
 | Corpus | PyMuPDF, regex | Extraer y limpiar la ley, segmentarla por jerarquía y guardar `corpus.json` con metadatos (ubicación, epígrafe, vigencia, temas). |
 | Embeddings | sentence-transformers `paraphrase-multilingual-MiniLM-L12-v2` | Convertir cada fragmento y cada pregunta en un vector de 384 dimensiones. |
-| Índice | FAISS `IndexFlatIP` | Búsqueda exacta por similitud coseno de los k fragmentos más cercanos. |
+| Índice semántico | FAISS `IndexFlatIP` | Búsqueda exacta por similitud coseno de los fragmentos más cercanos en significado. |
+| Índice léxico | BM25 (`rank-bm25`) | Búsqueda por palabras clave; complementa a FAISS en términos jurídicos exactos. |
+| Glosario | Diccionario de sinónimos | Traduce expresiones ciudadanas ("orinar en la calle", "parte", "pelea") a términos de la ley. |
 | Generación | LLM por API compatible con OpenAI | Redactar la respuesta usando solo los fragmentos recuperados y citando artículos. |
 | Motor API | FastAPI | Endpoints `/query` (RAG completo), `/buscar` (solo recuperación) y `/health`. |
 | Backend | Node.js + Express | API pública: CORS, `/api/chat`, `/upload_pdf/`, manejo de errores y `.env`. |
@@ -61,11 +68,12 @@ flowchart LR
 1. El ciudadano escribe la pregunta en el chat.
 2. El frontend la envía a `POST /api/chat` del backend.
 3. El backend valida la entrada y la reenvía a `POST /query` del motor.
-4. El motor genera el embedding de la pregunta con el mismo modelo usado para indexar.
-5. FAISS devuelve los k fragmentos más parecidos (por defecto k = 5).
-6. Se arma el prompt: instrucciones + fragmentos numerados con su referencia y vigencia + pregunta.
-7. El LLM responde citando los artículos, o dice que la información no está en el Código.
-8. La respuesta y las fuentes vuelven al frontend, que muestra ambas.
+4. La pregunta se expande con el glosario coloquial (por ejemplo, "orinar" → "necesidades fisiológicas", "calle" → "espacio público").
+5. FAISS (por significado) y BM25 (por palabras) buscan 40 candidatos cada uno; se fusionan con Reciprocal Rank Fusion y se toman los k = 8 mejores.
+6. Se agregan fragmentos relacionados: el parágrafo con la tabla de medidas de cada numeral encontrado, la medida exacta de ese numeral y, si aparece una "Multa General tipo X", el Art. 180 con su valor.
+7. Se arma el prompt: instrucciones + fragmentos numerados con su referencia, vigencia y medida correctiva + pregunta.
+8. El LLM responde citando los artículos, o dice que la información no está en el Código.
+9. La respuesta y las fuentes vuelven al frontend, que muestra ambas.
 
 ## Decisiones de diseño
 
@@ -77,9 +85,13 @@ flowchart LR
 
 Las dos se construyen con `python src/indexar.py --estrategia todas` y se comparan en la fase de evaluación con Precisión@k, Recall@k y MRR.
 
+**Limpieza: ligaduras tipográficas.** El PDF de Función Pública escribe "ﬁ" y "ﬂ" como un solo carácter (U+FB01, U+FB02). Eso hacía que "ﬁsiológicas" no coincidiera con "fisiológicas" ni en BM25 ni en los embeddings. Se normalizan en `extraer_texto.py`.
+
+**Búsqueda híbrida.** Solo con embeddings, la pregunta "¿Cuánto es la multa por orinar en la calle?" recuperaba artículos genéricos de multas, porque el ciudadano no usa el lenguaje de la ley. Con el glosario, BM25 y la fusión RRF se recupera el Art. 140, numeral 11 y su medida correctiva.
+
 **Índice FAISS.** Con unos cientos o pocos miles de fragmentos, `IndexFlatIP` hace búsqueda exacta en milisegundos, así que no hace falta un índice aproximado (IVF o HNSW). Los vectores se normalizan, con lo que el producto interno equivale a la similitud coseno.
 
-**Modelo de IA.** El motor usa el cliente de OpenAI con `LLM_BASE_URL` configurable, así el mismo código funciona con Groq, Gemini u OpenAI cambiando solo el `.env`. La temperatura es 0.1 para reducir respuestas creativas.
+**Modelo de IA.** Se usa `openai/gpt-oss-120b` en Groq (capa gratuita, ~1,5 s por respuesta, menos de los 10 s del RNF1). El motor usa el cliente de OpenAI con `LLM_BASE_URL` configurable, así el mismo código funciona con Groq, Gemini u OpenAI cambiando solo el `.env`. La temperatura es 0.1 para reducir respuestas creativas.
 
 **Control de alucinaciones.** El prompt obliga a responder solo con el contexto, citar artículo, numeral o parágrafo, advertir la vigencia y responder con una frase fija cuando la información no está en el Código (RF2, RF3).
 
@@ -87,7 +99,7 @@ Las dos se construyen con `python src/indexar.py --estrategia todas` y se compar
 
 ## Próximos pasos
 
-- Búsqueda híbrida: combinar FAISS con BM25 (`rank-bm25`) y el glosario de sinónimos coloquiales.
+- Ampliar el glosario coloquial con el análisis lingüístico de la Fase 2.
 - Clasificador temático para filtrar por libro o título antes de buscar.
 - Frontend en React con panel de fuentes.
 - Banco de 50 preguntas y evaluación con métricas.

@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from rag import Motor  # noqa: E402
 
 app = FastAPI(title="Motor RAG - Código Nacional de Policía",
-              description="Búsqueda semántica (FAISS) + respuesta con modelo de IA sobre la Ley 1801 de 2016")
+              description="Búsqueda híbrida (FAISS + BM25 + glosario coloquial) y respuesta con modelo de IA, citando artículos de la Ley 1801 de 2016")
 
 # el motor solo debería recibir llamadas del backend de Node
 app.add_middleware(
