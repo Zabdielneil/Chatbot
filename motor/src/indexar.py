@@ -56,24 +56,29 @@ def fragmentos_estructurales(articulos):
         numerales = art.get("numerales", [])
         paragrafos = art.get("paragrafos", [])
 
+        # cada fragmento lleva la vigencia de su propia unidad (un numeral puede ser inexequible
+        # aunque el resto del artículo siga vigente); si el corpus no la trae, se usa la del artículo
+        vig_art = art.get("vigencia", "vigente")
+        vig_inciso = art.get("inciso_vigencia", vig_art)
+
         if not numerales and not paragrafos:
-            frags.append({**base_fragmento(art), "tipo": "articulo",
+            frags.append({**base_fragmento(art), "tipo": "articulo", "vigencia": vig_inciso,
                           "ref": f"Artículo {art['articulo']}",
                           "texto": art.get("texto", "")})
             continue
 
         if inciso:
-            frags.append({**base_fragmento(art), "tipo": "inciso",
+            frags.append({**base_fragmento(art), "tipo": "inciso", "vigencia": vig_inciso,
                           "ref": f"Artículo {art['articulo']}", "texto": inciso})
         # a cada numeral le pegamos el inicio del inciso para que no pierda el contexto
         # (ej. "Los siguientes comportamientos afectan... : 4. Orinar en la vía pública")
         intro = " ".join(inciso.split()[:40])
         for n in numerales:
-            frags.append({**base_fragmento(art), "tipo": "numeral",
+            frags.append({**base_fragmento(art), "tipo": "numeral", "vigencia": n.get("vigencia", vig_art),
                           "ref": f"Artículo {art['articulo']}, numeral {n['numeral']}",
                           "texto": n["texto"], "contexto": intro})
         for p in paragrafos:
-            frags.append({**base_fragmento(art), "tipo": "paragrafo",
+            frags.append({**base_fragmento(art), "tipo": "paragrafo", "vigencia": p.get("vigencia", vig_art),
                           "ref": f"Artículo {art['articulo']}, parágrafo {p['paragrafo']}",
                           "texto": p["texto"]})
 
