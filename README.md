@@ -4,10 +4,10 @@ Chatbot con arquitectura RAG que responde preguntas sobre la Ley 1801 de 2016 ci
 
 ```
 motor/      Python: corpus, análisis lingüístico, embeddings, FAISS, RAG y API (FastAPI)
-backend/    Node.js + Express: API pública, CORS, /api/chat, /upload_pdf/
-frontend/   React + Vite: interfaz de chat (pendiente)
-evaluacion/ banco de preguntas y métricas (pendiente)
-docs/       corpus.md, arquitectura.md
+backend/    Node.js + Express: API pública, CORS, rate limit, /api/chat, /upload_pdf/ (con pruebas)
+frontend/   React + Vite: interfaz de chat con historial, fuentes y aviso legal
+evaluacion/ banco de 64 preguntas, script de métricas y reporte
+docs/       corpus.md, arquitectura.md, api.md
 ```
 
 Arquitectura completa: [docs/arquitectura.md](docs/arquitectura.md)
@@ -69,7 +69,13 @@ uvicorn src.api:app --reload --port 8000        # docs en http://localhost:8000/
 
 # terminal 2 – backend (desde backend/)
 npm run dev                                     # http://localhost:3001
+
+# terminal 3 – frontend (desde frontend/)
+npm install                                     # solo la primera vez
+npm run dev                                     # http://localhost:5173
 ```
+
+Para trabajar solo el frontend sin motor ni backend, pongan `VITE_DEMO=true` en el `.env`: el chat responde con datos de ejemplo marcados como MODO DEMO.
 
 Endpoints del backend:
 
@@ -77,8 +83,21 @@ Endpoints del backend:
 |---|---|---|
 | POST | `/api/chat` | Body `{"pregunta": "...", "k": 5}` → respuesta, fuentes y tiempo |
 | POST | `/upload_pdf/` | Form-data con campo `archivo` (PDF). Lo guarda sin reindexar |
+| GET | `/api/pendientes` | Lista los PDF cargados que esperan indexación |
 | GET | `/api/health` | Estado del backend y del motor |
+
+Detalle de cada endpoint, códigos de error y seguridad: [docs/api.md](docs/api.md). Pruebas del backend: `cd backend && npm test`.
 
 ## Variables de entorno
 
 Ver `.env.example`. El archivo `.env` no se sube al repositorio.
+
+## 6. Evaluación (desde la raíz del repo, con el .venv del motor activo)
+
+```bash
+python evaluacion/evaluar.py                  # recuperación: Precisión@k, Recall@k, MRR y umbral de fuera de dominio
+python evaluacion/evaluar.py --respuestas     # además genera respuestas con el modelo (necesita LLM_API_KEY)
+```
+
+Usa `evaluacion/banco_preguntas.json` (64 preguntas: 54 con artículos esperados y 10 fuera de dominio) y deja `reporte.md`, `recuperacion.csv` y `respuestas.csv` en `evaluacion/resultados/`.
+
