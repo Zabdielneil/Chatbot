@@ -34,6 +34,114 @@ RE_NOTA = re.compile(
     re.IGNORECASE,
 )
 
+# notas de vigencia que la fuente mete dentro del texto, p. ej.
+# "(Declarado INEXEQUIBLE mediante Sentencia de la Corte Constitucional C-281 de 2017)"
+# "(Numeral adicionado por el Art. 2 de la Ley 2000 de 2019)"
+RE_NOTA_EN_LINEA = re.compile(
+    r"\((?:[^()]|\([^()]*\))*?(?:modificad|adicionad|corregid|derogad|declarad|inexequib|exequib|"
+    r"subrogad|ver sentencia|inhibid)(?:[^()]|\([^()]*\))*?\)",
+    re.IGNORECASE,
+)
+RE_MARCA_EDITORIAL = re.compile(r"\*jurisprudencia\*", re.IGNORECASE)
+# las firmas de la ley no son parte del Art. 243
+RE_FIN_LEY = re.compile(r"^EL PRESIDENTE DEL HONORABLE SENADO", re.IGNORECASE)
+# encabezados de las tablas de medidas correctivas ("COMPORTAMIENTOS | MEDIDA CORRECTIVA A APLICAR")
+RE_ENCABEZADO_TABLA = re.compile(r"^COMPOR-?TAMIENTOS|MEDIDAS? CORRECTIVAS?\s*A\s*APLICAR|^ACTIVIDADES", re.IGNORECASE)
+
+ROMANOS_NUM = [(10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I")]
+
+
+def a_romano(n):
+    r = ""
+    for valor, letra in ROMANOS_NUM:
+        while n >= valor:
+            r, n = r + letra, n - valor
+    return r
+
+
+def separar_notas(texto):
+    """Quita del texto las notas de vigencia entre paréntesis y las devuelve aparte."""
+    notas = [re.sub(r"\s+", " ", m).strip() for m in RE_NOTA_EN_LINEA.findall(texto)]
+    limpio = RE_MARCA_EDITORIAL.sub(" ", RE_NOTA_EN_LINEA.sub(" ", texto))
+    return re.sub(r"\s+", " ", limpio).strip(), notas
+
+
+def vigencia_unidad(notas):
+    """Vigencia de un inciso, numeral o parágrafo según las notas que lo acompañan."""
+    t = " ".join(notas).lower()
+    if not t:
+        return "vigente"
+    parcial = re.search(r"subrayad|con excepci[oó]n|inciso", t)
+    if "inexequib" in t:
+        return "inexequible parcial" if parcial else "inexequible"
+    if "condicional" in t:
+        return "exequibilidad condicionada"
+    if "derogad" in t:
+        return "derogado"
+    if re.search(r"modificad|adicionad|corregid|subrogad", t):
+        return "modificado"
+    return "vigente"  # declarado exequible o solo "ver sentencia"
+
+
+def es_linea_mayuscula(linea):
+    letras = [c for c in linea if c.isalpha()]
+    return len(letras) >= 3 and sum(c.isupper() for c in letras) / len(letras) > 0.85
+
+
+def detectar_estructura(lineas):
+    """La edición usada no rotula los títulos con "TÍTULO X": solo pone su nombre en mayúsculas
+    antes del primer capítulo o artículo. Aquí se identifican:
+      - nombre del libro: el bloque de líneas seguidas en mayúsculas después de "LIBRO ..."
+      - título: línea en mayúsculas cuyo siguiente renglón es un CAPÍTULO o un ARTÍCULO
+      - fin: donde empiezan las firmas de la ley
+    Devuelve {indice: (tipo, valor)} y el índice donde termina el articulado."""
+    especiales, fin = {}, len(lineas)
+
+    def siguiente(i):
+        j = i + 1
+        while j < len(lineas) and not lineas[j].strip():
+            j += 1
+        return j
+
+    def anterior(i):
+        j = i - 1
+        while j >= 0 and not lineas[j].strip():
+            j -= 1
+        return j
+
+    for i, bruta in enumerate(lineas):
+        linea = bruta.strip()
+        if RE_FIN_LEY.match(linea):
+            fin = i
+            break
+        if RE_LIBRO.match(linea):
+            j, nombre = siguiente(i), []
+            while j < len(lineas) and lineas[j].strip() and es_linea_mayuscula(lineas[j].strip()) \
+                    and not RE_CAPITULO.match(lineas[j].strip()):
+                nombre.append(lineas[j].strip())
+                especiales[j] = ("libro_nombre", None)
+                j += 1
+            especiales[i] = ("libro", " ".join(nombre))
+            continue
+        if i in especiales or not linea or not es_linea_mayuscula(linea):
+            continue
+        if re.match(r"^(LIBRO|T[ÍI]TULO|CAP[ÍI]TULO|ART[ÍI]CULO|PAR[ÁA]GRAFO)", linea, re.IGNORECASE):
+            continue
+        if RE_ENCABEZADO_TABLA.search(linea):
+            continue
+        sig, ant = siguiente(i), anterior(i)
+        sig_linea = lineas[sig].strip() if sig < len(lineas) else ""
+        ant_linea = lineas[ant].strip() if ant >= 0 else ""
+        if RE_CAPITULO.match(ant_linea):
+            continue  # es el nombre de un capítulo
+        if RE_CAPITULO.match(sig_linea) or RE_ARTICULO.match(sig_linea):
+            especiales[i] = ("titulo", linea.rstrip("."))
+        elif es_linea_mayuscula(sig_linea) and not RE_ENCABEZADO_TABLA.search(sig_linea):
+            # línea suelta entre el nombre del libro y el título (p. ej. Libro Primero): se descarta
+            especiales[i] = ("omitir", linea)
+    return especiales, fin
+
+
 # palabras clave para etiquetar el tema de cada artículo (ajústenlas con el análisis de la fase 2)
 TEMAS = {
     "espacio público": ["espacio público", "vía pública", "andén", "parque"],
@@ -97,8 +205,35 @@ def temas_de(articulo):
     return encontrados or ["general"]
 
 
+RE_NOTA_LINEA_COMPLETA = re.compile(r"^\(.*\)$")
+RE_NOTA_CON_UNIDAD = re.compile(
+    r"^\(\s*(Numerales?|Par[áa]grafos?)\s+((?:\d+|[úu]nico|transitorio)(?:\s*(?:,|y)\s*\d+)*)", re.IGNORECASE)
+
+
+def notas_finales(lineas):
+    """Separa las notas que la fuente pone al final del artículo, después de su último numeral o parágrafo.
+    Esas notas se refieren al artículo completo, salvo que nombren una unidad
+    ("(Parágrafo 3, declarado INEXEQUIBLE...)", "(Numerales 2, 3 y 4 adicionados...)")."""
+    lineas = list(lineas)
+    finales = []
+    while lineas and RE_NOTA_LINEA_COMPLETA.match(lineas[-1].strip()) and RE_NOTA_EN_LINEA.search(lineas[-1]):
+        finales.insert(0, re.sub(r"\s+", " ", lineas.pop().strip()))
+    del_articulo, por_unidad = [], []  # por_unidad: (tipo, id, nota)
+    for nota in finales:
+        m = RE_NOTA_CON_UNIDAD.match(nota)
+        if m:
+            tipo = "numeral" if m.group(1).lower().startswith("numeral") else "paragrafo"
+            for ident in re.findall(r"\d+|[úu]nico|transitorio", m.group(2), re.IGNORECASE):
+                por_unidad.append((tipo, ident.lower(), nota))
+        else:
+            del_articulo.append(nota)
+    return lineas, del_articulo, por_unidad
+
+
 def partir_cuerpo(lineas):
-    """Separa inciso principal, numerales y parágrafos respetando los saltos de línea del PDF."""
+    """Separa inciso principal, numerales y parágrafos respetando los saltos de línea del PDF.
+    Devuelve también las notas de vigencia que aplican al artículo completo."""
+    lineas, notas_articulo, notas_unidad = notas_finales(lineas)
     bloques = []  # (tipo, id, [lineas])
     actual = ["inciso", None, []]
     siguiente_num = 1
@@ -117,14 +252,27 @@ def partir_cuerpo(lineas):
             actual[2].append(linea)
     bloques.append(actual)
 
-    inciso = unir(next((b[2] for b in bloques if b[0] == "inciso"), []))
-    numerales = [{"numeral": b[1], "texto": unir(b[2])} for b in bloques if b[0] == "numeral"]
-    paragrafos = [{"paragrafo": b[1], "texto": unir(b[2])} for b in bloques if b[0] == "paragrafo"]
-    return inciso, numerales, paragrafos
+    # si todo el artículo fue declarado inexequible o derogado, lo heredan todas sus unidades
+    vigencia_articulo = vigencia_unidad(notas_articulo)
+    hereda = vigencia_articulo if vigencia_articulo in ("inexequible", "derogado") else None
+
+    def unidad(clave, b):
+        texto, notas = separar_notas(unir(b[2]))
+        ident = (b[1] or "").split()[0].lower() if b[1] else ""
+        notas += [n for tipo, i, n in notas_unidad if tipo == clave and i == ident]
+        return {clave: b[1], "texto": texto, "vigencia": hereda or vigencia_unidad(notas), "notas": notas}
+
+    inciso_texto, inciso_notas = separar_notas(unir(next((b[2] for b in bloques if b[0] == "inciso"), [])))
+    inciso = {"texto": inciso_texto, "vigencia": hereda or vigencia_unidad(inciso_notas), "notas": inciso_notas}
+    numerales = [unidad("numeral", b) for b in bloques if b[0] == "numeral"]
+    paragrafos = [unidad("paragrafo", b) for b in bloques if b[0] == "paragrafo"]
+    return inciso, numerales, paragrafos, notas_articulo, vigencia_articulo
 
 
 def segmentar(texto):
     lineas = texto.splitlines()
+    especiales, fin = detectar_estructura(lineas)
+    titulos_en_libro = 0
     ubic = {"libro": None, "titulo": None, "capitulo": None}
     nombres = {"libro": "", "titulo": "", "capitulo": ""}
     esperando_nombre = None
@@ -139,14 +287,18 @@ def segmentar(texto):
             return
         cuerpo = art.pop("_lineas")
         notas = unir(art.pop("_notas"))
-        inciso, numerales, paragrafos = partir_cuerpo(cuerpo)
-        art["texto"] = unir(cuerpo)
-        art["inciso"] = inciso
+        inciso, numerales, paragrafos, notas_articulo, vigencia_articulo = partir_cuerpo(cuerpo)
+        art["texto"], notas_texto = separar_notas(unir(cuerpo))
+        art["inciso"] = inciso["texto"]
+        art["inciso_vigencia"] = inciso["vigencia"]
         art["numerales"] = numerales
         art["paragrafos"] = paragrafos
+        notas = " | ".join(x for x in [notas, *notas_texto] if x)
         art["notas_vigencia"] = notas
+        art["notas_articulo"] = notas_articulo
         estado, banderas, leyes, sentencias = vigencia_de(art["texto"], notas)
-        art["vigencia"] = estado
+        # estado del artículo completo: vigente | vigente con cambios | inexequible | derogado
+        art["vigencia"] = vigencia_articulo if vigencia_articulo in ("inexequible", "derogado") else estado
         art["observaciones_vigencia"] = banderas
         art["normas_modificatorias"] = leyes
         art["sentencias"] = sentencias
@@ -154,9 +306,24 @@ def segmentar(texto):
         art["n_palabras"] = len(art["texto"].split())
         articulos.append(art)
 
-    for linea in lineas:
+    for idx, linea in enumerate(lineas):
+        if idx >= fin:
+            break
         linea = linea.strip()
         if not linea:
+            continue
+
+        especial = especiales.get(idx)
+        if especial and especial[0] in ("libro_nombre", "omitir"):
+            continue
+        if especial and especial[0] == "titulo":
+            if art is not None:
+                cerrar()
+                art = None
+            titulos_en_libro += 1
+            ubic.update(titulo=a_romano(titulos_en_libro), capitulo=None)
+            nombres.update(titulo=especial[1], capitulo="")
+            esperando_nombre = None
             continue
 
         m_libro, m_tit, m_cap = RE_LIBRO.match(linea), RE_TITULO.match(linea), RE_CAPITULO.match(linea)
@@ -168,9 +335,12 @@ def segmentar(texto):
                 continue
             if m_libro:
                 ubic.update(libro=m_libro.group(1).title(), titulo=None, capitulo=None)
-                nombres.update(libro=m_libro.group(2), titulo="", capitulo="")
-                esperando_nombre = "libro"
+                nombre_libro = especial[1] if especial else ""
+                nombres.update(libro=f"{m_libro.group(2)} {nombre_libro}".strip(), titulo="", capitulo="")
+                titulos_en_libro = 0
+                esperando_nombre = None if nombre_libro else "libro"
             elif m_tit:
+                titulos_en_libro += 1
                 ubic.update(titulo=m_tit.group(1), capitulo=None)
                 nombres.update(titulo=m_tit.group(2), capitulo="")
                 esperando_nombre = "titulo"
@@ -262,6 +432,11 @@ def main():
         print(f"Faltan ({len(faltan)}): {faltan[:40]}{' ...' if len(faltan) > 40 else ''}")
     print("Por libro:", dict(Counter(a["libro"] for a in articulos)))
     print("Por vigencia:", dict(Counter(a["vigencia"] for a in articulos)))
+    titulos = {(a["libro"], a["titulo"], a["titulo_nombre"]) for a in articulos}
+    print("Títulos por libro:", dict(Counter(t[0] for t in titulos)))
+    print("Artículos sin título:", [a["articulo"] for a in articulos if not a["titulo"]])
+    unidades = [u for a in articulos for u in a["numerales"] + a["paragrafos"]]
+    print("Vigencia de numerales y parágrafos:", dict(Counter(u["vigencia"] for u in unidades)))
     print("Parágrafos:", sum(len(a["paragrafos"]) for a in articulos),
           "| Numerales:", sum(len(a["numerales"]) for a in articulos))
     sin_epigrafe = [a["articulo"] for a in articulos if not a["epigrafe"]]
