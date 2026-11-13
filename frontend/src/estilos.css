@@ -1,0 +1,212 @@
+:root {
+  --fondo: #f4f6f9;
+  --superficie: #ffffff;
+  --texto: #1c2430;
+  --texto-suave: #5b6675;
+  --borde: #dde3ea;
+  --primario: #1f4e8c;
+  --primario-claro: #e7eef8;
+  --usuario: #1f4e8c;
+  --usuario-texto: #ffffff;
+  --aviso-fondo: #fff7e0;
+  --aviso-borde: #f0d27a;
+  --ok: #1e7a46;
+  --ojo: #a86400;
+  --mal: #b3261e;
+  --error-fondo: #fdecea;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--texto);
+  background: var(--fondo);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fondo: #12161c;
+    --superficie: #1b2129;
+    --texto: #e6eaf0;
+    --texto-suave: #9aa5b4;
+    --borde: #2c3540;
+    --primario: #7fb0ff;
+    --primario-claro: #1e2b3d;
+    --usuario: #2f5f9e;
+    --aviso-fondo: #2e2714;
+    --aviso-borde: #6b5a22;
+    --ok: #5cc98a;
+    --ojo: #e3a540;
+    --mal: #f07167;
+    --error-fondo: #3a1f1d;
+  }
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fondo); }
+button { font: inherit; cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: 0.55; }
+
+.app {
+  max-width: 860px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- cabecera ---------- */
+.cabecera {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--fondo);
+  padding: 16px 16px 8px;
+}
+.cabecera-fila { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+h1 { font-size: 1.35rem; margin: 0; color: var(--primario); }
+.subtitulo { margin: 2px 0 10px; color: var(--texto-suave); font-size: 0.9rem; }
+.aviso {
+  background: var(--aviso-fondo);
+  border: 1px solid var(--aviso-borde);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.etiqueta-demo {
+  margin-left: 8px;
+  background: var(--mal);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.boton-secundario {
+  background: transparent;
+  border: 1px solid var(--borde);
+  color: var(--texto);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+.boton-secundario:hover:not(:disabled) { border-color: var(--primario); color: var(--primario); }
+
+/* ---------- chat ---------- */
+.chat { flex: 1; padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 12px; }
+
+.bienvenida { color: var(--texto-suave); line-height: 1.5; }
+.sugerencias { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; margin-top: 12px; }
+.sugerencias button {
+  text-align: left;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--texto);
+  font-size: 0.9rem;
+}
+.sugerencias button:hover { border-color: var(--primario); }
+
+.mensaje { display: flex; }
+.mensaje.usuario { justify-content: flex-end; }
+.burbuja {
+  max-width: min(680px, 92%);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 14px;
+  padding: 10px 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.burbuja p { margin: 0 0 8px; }
+.burbuja p:last-of-type { margin-bottom: 0; }
+.mensaje.usuario .burbuja { background: var(--usuario); color: var(--usuario-texto); border-color: transparent; white-space: pre-wrap; }
+.burbuja.error { background: var(--error-fondo); border-color: var(--mal); }
+.burbuja.error p { margin-bottom: 8px; }
+
+.cita {
+  background: var(--primario-claro);
+  color: var(--primario);
+  border: none;
+  border-radius: 4px;
+  padding: 0 4px;
+  font-weight: 600;
+  font-size: 0.92em;
+}
+.cita:hover { text-decoration: underline; }
+
+.meta { margin-top: 6px; font-size: 0.75rem; color: var(--texto-suave); text-align: right; }
+
+/* ---------- fuentes ---------- */
+.fuentes { margin-top: 10px; border-top: 1px solid var(--borde); padding-top: 8px; }
+.ver-fuentes { background: none; border: none; color: var(--primario); padding: 0; font-weight: 600; font-size: 0.88rem; }
+.fuentes ul { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-direction: column; gap: 6px; }
+.fuente { border: 1px solid var(--borde); border-radius: 8px; overflow: hidden; }
+.fuente-cabecera {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  background: none;
+  border: none;
+  padding: 8px 10px;
+  text-align: left;
+  color: var(--texto);
+  font-size: 0.85rem;
+}
+.fuente-ref { font-weight: 700; }
+.fuente-epigrafe { color: var(--texto-suave); flex: 1; min-width: 140px; }
+.vigencia { font-size: 0.72rem; font-weight: 600; padding: 1px 6px; border-radius: 10px; border: 1px solid currentColor; }
+.vigencia.ok { color: var(--ok); }
+.vigencia.ojo { color: var(--ojo); }
+.vigencia.mal { color: var(--mal); }
+.puntaje { font-size: 0.75rem; color: var(--texto-suave); font-variant-numeric: tabular-nums; }
+.fuente-texto {
+  margin: 0;
+  padding: 8px 12px 10px;
+  border-top: 1px solid var(--borde);
+  font-size: 0.88rem;
+  white-space: pre-wrap;
+  background: var(--fondo);
+}
+
+/* ---------- escribiendo ---------- */
+.escribiendo { display: flex; gap: 4px; padding: 14px; }
+.escribiendo span { width: 7px; height: 7px; border-radius: 50%; background: var(--texto-suave); animation: rebote 1.2s infinite; }
+.escribiendo span:nth-child(2) { animation-delay: 0.15s; }
+.escribiendo span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes rebote { 0%, 80%, 100% { opacity: 0.3; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-4px); } }
+
+/* ---------- entrada ---------- */
+.entrada {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 16px;
+  background: var(--fondo);
+  border-top: 1px solid var(--borde);
+}
+.entrada textarea {
+  flex: 1;
+  resize: none;
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--borde);
+  background: var(--superficie);
+  color: var(--texto);
+  max-height: 140px;
+}
+.entrada textarea:focus { outline: 2px solid var(--primario); outline-offset: -1px; }
+.entrada button[type="submit"] {
+  background: var(--primario);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0 18px;
+  font-weight: 600;
+}
+@media (prefers-color-scheme: dark) {
+  .entrada button[type="submit"] { color: #10161f; }
+}

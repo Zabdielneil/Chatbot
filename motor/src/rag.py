@@ -44,12 +44,22 @@ aclara qué parte no aparece. Por ejemplo, si el contexto dice qué tipo de mult
 valor, di el tipo de multa. El Artículo 180 define el valor de cada tipo de multa general.
 5. Solo si el CONTEXTO no tiene NADA relacionado con la pregunta, responde exactamente: \
 "{NO_ENCONTRADO}" y no agregues nada inventado.
-6. Si un fragmento tiene vigencia distinta de "vigente", adviértelo en la respuesta.
+6. Si un fragmento tiene vigencia distinta de "vigente", adviértelo en la respuesta. Si su vigencia \
+es "inexequible", explica que la Corte Constitucional lo declaró inexequible y que ya no se aplica; \
+nunca lo presentes como una norma vigente.
 7. Responde en español claro y sencillo, máximo 2 párrafos cortos, pensando en un ciudadano sin \
 formación jurídica.
 8. No des asesoría jurídica personalizada; si te la piden, aclara que eres una herramienta informativa."""
 
 ARTICULO_MULTAS = 180  # define el valor de las multas generales tipo 1 a 4
+
+# RF3: similitud coseno mínima (FAISS) del mejor fragmento para considerar que la pregunta es del Código.
+# Por debajo, se responde NO_ENCONTRADO sin llamar al modelo. Calibrado con evaluacion/evaluar.py.
+UMBRAL_DOMINIO = float(os.getenv("UMBRAL_DOMINIO", "0.37"))
+# clasificador temático: cuánto se premia (en proporción) a los fragmentos del tema detectado
+BONO_TEMA = float(os.getenv("BONO_TEMA", "0.15"))
+# en la búsqueda híbrida, factor que multiplica el puntaje de los fragmentos declarados inexequibles
+PESO_INEXEQUIBLE = float(os.getenv("PESO_INEXEQUIBLE", "0.6"))
 
 # Glosario de expresiones coloquiales → términos de la ley (expansión de consultas).
 # Amplíenlo con el análisis de la Fase 2 (frecuencias, KWIC).
@@ -97,6 +107,12 @@ SINONIMOS = {
     "no pago": "no pago de multas",
 }
 
+# sinónimos adicionales del glosario de la Fase 2 (motor/data/glosario.json)
+try:
+    SINONIMOS.update(json.loads((BASE / "data" / "glosario.json").read_text(encoding="utf-8"))["sinonimos"])
+except (OSError, KeyError, ValueError):
+    pass
+
 STOPWORDS = set("""a al algo ante con contra cual cuando de del desde donde e el ella ellas ellos en
 entre era es esa ese eso esta este esto la las le les lo los mas me mi mis muy ni no nos o os para pero
 por porque que quien se si sin sobre su sus te tu un una uno unos unas y ya hay como cuanto cuanta
@@ -110,6 +126,15 @@ def normalizar(texto):
 
 def tokenizar(texto):
     return [t for t in re.findall(r"\w+", normalizar(texto)) if len(t) > 2 and t not in STOPWORDS]
+
+
+def clasificar_tema(consulta):
+    """Clasificador temático por palabras clave: usa las mismas listas con que segmentar.py
+    etiquetó cada artículo (TEMAS), así la pregunta y los fragmentos comparten las etiquetas."""
+    from segmentar import TEMAS
+    base = normalizar(consulta)
+    return [tema for tema, claves in TEMAS.items()
+            if any(re.search(rf"\b{re.escape(normalizar(c))}", base) for c in claves)]
 
 
 def expandir_consulta(pregunta):
@@ -198,20 +223,37 @@ class Motor:
         return None
 
     def buscar(self, pregunta, k=8, modo="hibrido"):
+        """Devuelve solo la lista de fragmentos (lo usa el endpoint /buscar)."""
+        return self._buscar(pregunta, k, modo)["fuentes"]
+
+    def _buscar(self, pregunta, k=8, modo="hibrido"):
+        # todo lo de esta consulta vive en variables locales: el motor atiende varias peticiones a la vez
         consulta, extras = expandir_consulta(pregunta)
+        temas = clasificar_tema(consulta)
         candidatos = 40
         puntajes_bm25 = self.bm25.get_scores(tokenizar(consulta))
+        semanticos = self._semantico(consulta, max(candidatos, k))
+        similitud_max = semanticos[0][1] if semanticos else 0.0
 
         if modo == "semantico":
-            ranking = self._semantico(consulta, k)
+            ranking = semanticos[:k]
         elif modo == "lexico":
             ranking = self._lexico(consulta, k)
         else:
             # Reciprocal Rank Fusion: premia lo que sale arriba en cualquiera de las dos listas
             rrf = {}
-            for lista in (self._semantico(consulta, candidatos), self._lexico(consulta, candidatos)):
+            for lista in (semanticos[:candidatos], self._lexico(consulta, candidatos)):
                 for pos, (i, _) in enumerate(lista):
                     rrf[i] = rrf.get(i, 0) + 1 / (60 + pos)
+            # clasificador temático: favorece los fragmentos del tema de la pregunta (libro/título)
+            if temas and BONO_TEMA:
+                for i in rrf:
+                    if set(self.fragmentos[i].get("temas", [])) & set(temas):
+                        rrf[i] *= 1 + BONO_TEMA
+            # lo declarado inexequible baja en el ranking (sigue disponible si se pregunta por ello)
+            for i in rrf:
+                if self.fragmentos[i].get("vigencia") == "inexequible":
+                    rrf[i] *= PESO_INEXEQUIBLE
             ranking = sorted(rrf.items(), key=lambda x: x[1], reverse=True)[:k]
 
         vistos, resultados = set(), []
@@ -239,8 +281,8 @@ class Motor:
             for j, f in enumerate(self.fragmentos):
                 if f["articulo"] == ARTICULO_MULTAS and f["tipo"] in ("inciso", "numeral", "articulo"):
                     agregar(j, 0.0, "relacionado")
-        self.ultima_expansion = extras
-        return resultados
+        return {"fuentes": resultados, "terminos_agregados": extras, "temas": temas,
+                "similitud_max": round(similitud_max, 4)}
 
     # ---------- generación ----------
     @staticmethod
@@ -255,9 +297,15 @@ class Motor:
 
     def preguntar(self, pregunta, k=8, modo="hibrido"):
         t0 = time.time()
-        fuentes = self.buscar(pregunta, k, modo)
+        busqueda = self._buscar(pregunta, k, modo)
+        fuentes = busqueda["fuentes"]
+        # RF3: si ni el fragmento más parecido se acerca a la pregunta, está fuera del Código;
+        # se responde sin llamar al modelo para que no invente con contexto que no sirve
+        fuera_de_dominio = modo != "lexico" and busqueda["similitud_max"] < UMBRAL_DOMINIO
 
-        if self.cliente_llm is None:
+        if fuera_de_dominio:
+            respuesta = NO_ENCONTRADO
+        elif self.cliente_llm is None:
             respuesta = ("(Modo sin modelo de IA: falta LLM_API_KEY en el .env. "
                          "Estos son los fragmentos más relevantes que se encontraron.)")
         else:
@@ -275,7 +323,10 @@ class Motor:
             "pregunta": pregunta,
             "respuesta": respuesta,
             "fuentes": fuentes,
-            "terminos_agregados": self.ultima_expansion,
+            "terminos_agregados": busqueda["terminos_agregados"],
+            "temas_detectados": busqueda["temas"],
+            "similitud_max": busqueda["similitud_max"],
+            "fuera_de_dominio": fuera_de_dominio,
             "modo_busqueda": modo,
             "estrategia": self.estrategia,
             "modelo_embeddings": self.nombre_modelo,
@@ -295,16 +346,20 @@ def main():
 
     motor = Motor(args.estrategia)
     if args.solo_buscar:
-        fuentes = motor.buscar(args.pregunta, args.k, args.modo)
-        if motor.ultima_expansion:
-            print(f"Consulta expandida con: {motor.ultima_expansion}\n")
-        for f in fuentes:
+        b = motor._buscar(args.pregunta, args.k, args.modo)
+        if b["terminos_agregados"]:
+            print(f"Consulta expandida con: {b['terminos_agregados']}")
+        print(f"Temas detectados: {b['temas'] or '-'} | similitud máxima: {b['similitud_max']}"
+              f"{'  (FUERA DE DOMINIO)' if b['similitud_max'] < UMBRAL_DOMINIO else ''}\n")
+        for f in b["fuentes"]:
             marca = "  ↳" if f["origen"] == "relacionado" else f"{f['puntaje']:.3f}"
             print(f"{marca:>6}  {f['ref']} — {f['epigrafe']}\n        {f['texto'][:160]}...")
         return
     r = motor.preguntar(args.pregunta, args.k, args.modo)
     if r["terminos_agregados"]:
         print(f"Consulta expandida con: {r['terminos_agregados']}")
+    print(f"Temas detectados: {r['temas_detectados'] or '-'} | similitud máxima: {r['similitud_max']}"
+          f"{'  (FUERA DE DOMINIO)' if r['fuera_de_dominio'] else ''}")
     print("\nRESPUESTA:\n" + r["respuesta"])
     print("\nFUENTES:")
     for f in r["fuentes"]:
