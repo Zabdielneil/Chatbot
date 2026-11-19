@@ -49,8 +49,10 @@ def articulos_rankeados(fuentes):
     for f in fuentes:
         if f.get("origen") == "relacionado":
             continue
-        if f["articulo"] not in vistos:
-            vistos.append(f["articulo"])
+        # los artículos de la Ley 769 se identifican como "769:131" para no confundirlos con la 1801
+        clave = f"769:{f['articulo']}" if "769" in (f.get("norma") or "") else f["articulo"]
+        if clave not in vistos:
+            vistos.append(clave)
     return vistos
 
 
@@ -119,42 +121,59 @@ def calibrar_umbral(preguntas, similitudes, estrategia="estructural"):
     }
 
 
-RE_CITA = re.compile(r"Art(?:\.|ículo)\s*(\d{1,3})", re.IGNORECASE)
+# citas como "(Ley 1801, Art. 35, num. 3)", "(Ley 769, Art. 131, lit. D.4)" o "Art. 140"
+RE_CITA = re.compile(r"(?:Ley\s+(1801|769)[^,)]*,\s*)?Art(?:\.|ículo)\s*(\d{1,3}[A-Z]?)", re.IGNORECASE)
+
+
+def clave_cita(ley, art):
+    art = int(art) if art.isdigit() else art
+    return f"769:{art}" if ley == "769" else art
 
 
 def evaluar_respuestas(preguntas):
-    motor = rag.Motor("estructural")
-    if motor.cliente_llm is None:
+    """Evalúa al agente Lexia (el mismo que usa la interfaz): cita, abstención y tiempo."""
+    from agente import Lexia
+    lexia = Lexia(rag.Motor("estructural"))
+    if lexia.cliente is None:
         print("  Falta LLM_API_KEY en el .env: no se pueden generar respuestas.")
         return []
     filas = []
     for p in preguntas:
         t0 = time.time()
+        respuesta, fuentes, pasos, error = "", [], 0, ""
         try:
-            r = motor.preguntar(p["pregunta"])
-            respuesta, error = r["respuesta"], ""
+            for e in lexia.conversar([{"rol": "usuario", "texto": p["pregunta"]}]):
+                if e["tipo"] == "respuesta":
+                    respuesta = e["texto"]
+                elif e["tipo"] == "fuentes":
+                    fuentes = e["fuentes"]
+                elif e["tipo"] == "estado" and e["texto"].startswith(("Buscando", "Leyendo")):
+                    pasos += 1
+                elif e["tipo"] == "error":
+                    error = e["texto"][:120]
         except Exception as e:  # límite de la API, etc.
-            r, respuesta, error = {"fuentes": []}, "", str(e)[:120]
+            error = str(e)[:120]
         segundos = time.time() - t0
-        citados = {int(n) for n in RE_CITA.findall(respuesta)}
-        en_contexto = {f["articulo"] for f in r["fuentes"]}
+        citados = {clave_cita(ley, art) for ley, art in RE_CITA.findall(respuesta)}
+        en_contexto = {clave_cita("769" if "769" in (f.get("norma") or "") else "", str(f["articulo"]))
+                       for f in fuentes}
         se_abstuvo = respuesta.strip().startswith("No encontré")
         fuera = p["tipo"] == "fuera_de_dominio"
         filas.append({
             "id": p["id"], "tipo": p["tipo"], "pregunta": p["pregunta"],
             "esperados": " ".join(map(str, p["articulos_esperados"])),
-            "citados": " ".join(map(str, sorted(citados))),
-            "cita_correcta": "" if fuera else int(bool(citados & set(p["articulos_esperados"]))
-                                                  and citados <= en_contexto),
+            "citados": " ".join(map(str, sorted(citados, key=str))),
+            "cita_correcta": "" if fuera else int(bool(citados & set(p["articulos_esperados"]))),
             "cita_inventada": int(bool(citados - en_contexto)),
             "abstencion_correcta": int(se_abstuvo == fuera),
+            "consultas_del_agente": pasos,
             "segundos": round(segundos, 2),
             "exactitud_manual": "", "fidelidad_manual": "",
             "respuesta": respuesta.replace("\n", " "), "error": error,
         })
         print(f"  #{p['id']:>2} {segundos:4.1f}s cita={filas[-1]['cita_correcta']} "
-              f"abst={filas[-1]['abstencion_correcta']} {error}")
-        time.sleep(0.5)  # no saturar la capa gratuita del proveedor
+              f"abst={filas[-1]['abstencion_correcta']} pasos={pasos} {error}")
+        time.sleep(1)  # no saturar la capa gratuita del proveedor
     return filas
 
 

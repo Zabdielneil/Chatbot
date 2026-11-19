@@ -1,33 +1,34 @@
 # Reporte de evaluación
 
-Banco: 64 preguntas (54 con artículos esperados, 10 fuera de dominio). Generado con `python evaluacion/evaluar.py`.
+Banco: 68 preguntas (58 con artículos esperados, 10 fuera de dominio). Generado con `python evaluacion/evaluar.py`.
 
 ## Recuperación (por artículo)
 
 | Estrategia | Modo | k | Precisión@k | Recall@k | MRR |
 |---|---|---|---|---|---|
-| estructural | semantico | 3 | 0.296 | 0.748 | 0.643 |
-| estructural | semantico | 5 | 0.193 | 0.793 | 0.643 |
-| estructural | lexico | 3 | 0.284 | 0.748 | 0.661 |
-| estructural | lexico | 5 | 0.185 | 0.804 | 0.661 |
-| estructural | hibrido | 3 | 0.296 | 0.767 | 0.726 |
-| estructural | hibrido | 5 | 0.193 | 0.832 | 0.726 |
-| fija | semantico | 3 | 0.265 | 0.679 | 0.676 |
-| fija | semantico | 5 | 0.185 | 0.772 | 0.676 |
-| fija | lexico | 3 | 0.259 | 0.694 | 0.668 |
-| fija | lexico | 5 | 0.181 | 0.787 | 0.668 |
-| fija | hibrido | 3 | 0.290 | 0.748 | 0.725 |
-| fija | hibrido | 5 | 0.185 | 0.772 | 0.725 |
+| estructural | semantico | 3 | 0.276 | 0.667 | 0.641 |
+| estructural | semantico | 5 | 0.193 | 0.756 | 0.641 |
+| estructural | lexico | 3 | 0.282 | 0.705 | 0.688 |
+| estructural | lexico | 5 | 0.179 | 0.757 | 0.688 |
+| estructural | hibrido | 3 | 0.299 | 0.740 | 0.715 |
+| estructural | hibrido | 5 | 0.197 | 0.803 | 0.715 |
+| fija | semantico | 3 | 0.259 | 0.624 | 0.627 |
+| fija | semantico | 5 | 0.183 | 0.726 | 0.627 |
+| fija | lexico | 3 | 0.259 | 0.655 | 0.641 |
+| fija | lexico | 5 | 0.186 | 0.776 | 0.641 |
+| fija | hibrido | 3 | 0.287 | 0.705 | 0.679 |
+| fija | hibrido | 5 | 0.186 | 0.744 | 0.679 |
 
 ### Preguntas sin ningún artículo esperado recuperado (estructural, híbrido)
 
-- #4 (dominio): esperaba 222 210, recuperó 219 218 154 228 223
-- #19 (coloquial): esperaba 27, recuperó 36 135 155 33 140
-- #22 (dominio): esperaba 35, recuperó 210 168 198 183 163
+- #4 (dominio): esperaba 222 210, recuperó 219 769:135 769:147 218 769:137
+- #12 (dominio): esperaba 180, recuperó 146 124 134 103 110
+- #19 (coloquial): esperaba 27, recuperó 769:120 769:79 36 769:127 140
+- #22 (dominio): esperaba 35, recuperó 159 184 155 157 183
 
 ## Detección de preguntas fuera de dominio (similitud máxima FAISS)
 
-- Umbral actual (`UMBRAL_DOMINIO`): 0.37 → exactitud 87.5%
-- Mejor umbral en este banco: 0.433 → exactitud 89.1%
-- Similitud en preguntas del Código: mín 0.378, mediana 0.673
-- Similitud en preguntas fuera de dominio: máx 0.574, mediana 0.468
+- Umbral actual (`UMBRAL_DOMINIO`): 0.37 → exactitud 88.2%
+- Mejor umbral en este banco: 0.364 → exactitud 88.2%
+- Similitud en preguntas del Código: mín 0.411, mediana 0.675
+- Similitud en preguntas fuera de dominio: máx 0.692, mediana 0.549
