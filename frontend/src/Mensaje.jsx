@@ -59,6 +59,21 @@ export default function Mensaje({ mensaje, onReintentar, enCurso }) {
     return (
       <div className="fila fila--usuario">
         <div className="burbuja burbuja--usuario">
+          {mensaje.adjuntos?.length > 0 && (
+            <div className="burbuja__adjuntos">
+              {mensaje.adjuntos.map((a, i) =>
+                a.tipo === "imagen" ? (
+                  <img key={i} src={a.url} alt={a.nombre} className="burbuja__imagen" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                ) : a.tipo === "video" ? (
+                  <video key={i} src={a.url} controls className="burbuja__video" />
+                ) : (
+                  <span key={i} className="burbuja__archivo" title={a.nota || ""}>
+                    {{ audio: "🎙️", pdf: "📕" }[a.tipo] || "📄"} {a.nombre}
+                  </span>
+                )
+              )}
+            </div>
+          )}
           <p>{mensaje.texto}</p>
           <span className="burbuja__hora">{hora(mensaje.t)} ✓✓</span>
         </div>

@@ -54,6 +54,25 @@ export async function conversar(mensajes, onEvento, signal) {
   }
 }
 
+/** Sube un archivo adjunto; el motor lo convierte en texto (descripción, transcripción o contenido). */
+export async function subirAdjunto(archivo) {
+  if (MODO_DEMO) {
+    await esperar(900);
+    return { nombre: archivo.name, tipo: "archivo", texto: "[Contenido de ejemplo del modo demo]", nota: "" };
+  }
+  const fd = new FormData();
+  fd.append("archivo", archivo);
+  let r;
+  try {
+    r = await fetch(`${API_URL}/api/adjunto`, { method: "POST", body: fd });
+  } catch {
+    throw new Error("No pude subir el archivo. ¿Está corriendo el backend?");
+  }
+  const datos = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(datos.error || `Error ${r.status} al subir el archivo`);
+  return datos;
+}
+
 // ---------- modo demo (textos de ejemplo, NO son la ley) ----------
 const esperar = (ms) => new Promise((ok) => setTimeout(ok, ms));
 

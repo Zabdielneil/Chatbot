@@ -683,3 +683,81 @@ body {
   background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 40%, #4c1d95 72%, #7c3aed 100%);
   border: 1px solid rgba(216, 200, 255, 0.35);
 }
+
+/* ============ archivos adjuntos ============ */
+.adjuntos { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.adjunto {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 260px;
+  padding: 6px 30px 6px 6px;
+  border-radius: 14px;
+  border: 1px solid var(--borde);
+  background: var(--vidrio);
+  overflow: hidden;
+  animation: aparecer 0.25s ease;
+}
+.adjunto img, .adjunto__icono {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 10px;
+  object-fit: cover;
+  display: grid;
+  place-items: center;
+  font-size: 1.4rem;
+  background: rgba(167, 139, 250, 0.12);
+}
+.adjunto__info { display: flex; flex-direction: column; min-width: 0; }
+.adjunto__nombre { font-size: 0.8rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.adjunto__info small { font-size: 0.7rem; color: var(--texto-suave); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.adjunto--listo { border-color: rgba(167, 139, 250, 0.45); }
+.adjunto--listo small { color: var(--cian); }
+.adjunto--error { border-color: rgba(251, 113, 133, 0.5); }
+.adjunto--error small { color: var(--mal); }
+.adjunto__quitar {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.45);
+  font-size: 0.7rem;
+}
+.adjunto__carga {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 40%;
+  background: var(--gradiente-morado);
+  animation: barrer 1.1s ease-in-out infinite;
+}
+.burbuja__adjuntos { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.burbuja__imagen, .burbuja__video { max-width: 240px; max-height: 220px; border-radius: 12px; display: block; object-fit: cover; }
+.burbuja__archivo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 0.82rem;
+}
+.chat--soltar { outline: 2px dashed var(--cian); outline-offset: -8px; }
+.soltar {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  background: rgba(8, 6, 14, 0.78);
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}

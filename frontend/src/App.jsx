@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { conversar, MODO_DEMO } from "./api.js";
+import { conversar, subirAdjunto, MODO_DEMO } from "./api.js";
 import { dictar, puedeDictar, callar } from "./voz.js";
 import Avatar from "./Avatar.jsx";
 import Mensaje from "./Mensaje.jsx";
@@ -23,6 +23,11 @@ const ATAJOS = [
 // El historial vive solo en esta pestaña del navegador (sessionStorage): no se guarda en ningún
 // servidor, por la Ley 1581 de 2012 de protección de datos.
 const CLAVE = "lexia-chat";
+const MAX_ADJUNTOS = 3;
+const ACEPTA = "image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.md,.csv,.json";
+const tipoDe = (f) => (f.type.startsWith("image/") ? "imagen" : f.type.startsWith("video/") ? "video"
+  : f.type.startsWith("audio/") ? "audio" : /pdf$/i.test(f.name) ? "pdf" : "archivo");
+const ICONO = { imagen: "🖼️", video: "🎬", audio: "🎙️", pdf: "📕", archivo: "📄" };
 const cargar = () => {
   try {
     return JSON.parse(sessionStorage.getItem(CLAVE)) || [];
@@ -35,7 +40,7 @@ const cargar = () => {
 function historialParaLexia(mensajes) {
   return mensajes
     .filter((m, i) => m.rol === "lexia" || (m.rol === "usuario" && mensajes[i + 1]?.rol !== "error"))
-    .map(({ rol, texto }) => ({ rol, texto }));
+    .map(({ rol, texto, contexto }) => ({ rol, texto: contexto ? `${texto}${contexto}` : texto }));
 }
 
 function PantallaCarga({ saliendo }) {
@@ -63,6 +68,9 @@ export default function App() {
   const [escuchando, setEscuchando] = useState(false);
   const [avisoVoz, setAvisoVoz] = useState("");
   const [abajo, setAbajo] = useState(true);
+  const [adjuntos, setAdjuntos] = useState([]); // {id, nombre, tipo, url, estado: subiendo|listo|error, texto, nota}
+  const [arrastrando, setArrastrando] = useState(false);
+  const archivoRef = useRef(null);
   const listaRef = useRef(null);
   const entradaRef = useRef(null);
   const abortRef = useRef(null);
@@ -105,9 +113,30 @@ export default function App() {
     el.style.overflowY = el.scrollHeight > 160 ? "auto" : "hidden";
   }, [texto]);
 
+  function agregarArchivos(lista) {
+    const nuevos = [...lista].slice(0, MAX_ADJUNTOS - adjuntos.length).map((f) => ({
+      id: `${Date.now()}-${Math.random()}`, nombre: f.name, tipo: tipoDe(f),
+      url: URL.createObjectURL(f), estado: "subiendo", archivo: f,
+    }));
+    if (!nuevos.length) return;
+    setAdjuntos((a) => [...a, ...nuevos]);
+    for (const n of nuevos) {
+      subirAdjunto(n.archivo)
+        .then((r) => setAdjuntos((a) => a.map((x) => (x.id === n.id
+          ? { ...x, estado: r.texto ? "listo" : "error", texto: r.texto, nota: r.nota } : x))))
+        .catch((e) => setAdjuntos((a) => a.map((x) => (x.id === n.id ? { ...x, estado: "error", nota: e.message } : x))));
+    }
+  }
+
+  const subiendo = adjuntos.some((a) => a.estado === "subiendo");
+  const listos = adjuntos.filter((a) => a.estado === "listo");
+
   async function enviar(contenido) {
     let pregunta = (contenido ?? texto).trim();
-    if (pregunta.length < 3 || ocupado) return;
+    if (contenido === undefined && !pregunta && listos.length) {
+      pregunta = "Analiza este archivo según el Código de Policía y el Código de Tránsito.";
+    }
+    if (pregunta.length < 3 || ocupado || subiendo) return;
     if (modoCaso && contenido === undefined && !/caso/i.test(pregunta)) {
       pregunta = `Construye un caso jurídico estructurado sobre: ${pregunta}`;
     }
@@ -116,7 +145,17 @@ export default function App() {
     setTexto("");
     setModoCaso(false);
     setAbajo(true);
-    const historial = [...mensajes, { rol: "usuario", texto: pregunta, t: Date.now() }];
+    // el contenido de los archivos va a Lexia como contexto; en la burbuja solo se ve la vista previa
+    const usados = contenido === undefined ? adjuntos.filter((a) => a.estado !== "subiendo") : [];
+    const contexto = usados.map((a) => `
+
+[ARCHIVO ADJUNTO: ${a.nombre} (${a.tipo})]
+${a.texto || a.nota || "No se pudo leer."}`).join("");
+    if (contenido === undefined) setAdjuntos([]);
+    const historial = [...mensajes, {
+      rol: "usuario", texto: pregunta, t: Date.now(), contexto: contexto || undefined,
+      adjuntos: usados.length ? usados.map(({ nombre, tipo, url, nota, estado }) => ({ nombre, tipo, url, nota, estado })) : undefined,
+    }];
     setMensajes(historial);
     setProgreso({ pasos: [] });
 
@@ -231,7 +270,13 @@ export default function App() {
         </aside>
 
         {/* ---------- chat ---------- */}
-        <main className="chat">
+        <main
+          className={`chat ${arrastrando ? "chat--soltar" : ""}`}
+          onDragOver={(e) => { if (e.dataTransfer.types.includes("Files")) { e.preventDefault(); setArrastrando(true); } }}
+          onDragLeave={(e) => { if (e.currentTarget === e.target) setArrastrando(false); }}
+          onDrop={(e) => { e.preventDefault(); setArrastrando(false); agregarArchivos(e.dataTransfer.files); }}
+        >
+          {arrastrando && <div className="soltar">📎 Suelta aquí tus fotos, videos, audios o documentos</div>}
           <header className="chat__cabecera">
             <Avatar estado={estadoAvatar} tamano={42} conHalo={false} />
             <div className="chat__titulo">
@@ -309,7 +354,30 @@ export default function App() {
                 {avisoVoz || (<><span className="ondas"><i /><i /><i /><i /><i /></span> Te escucho… toca el micrófono para terminar</>)}
               </div>
             )}
+            {adjuntos.length > 0 && (
+              <div className="adjuntos">
+                {adjuntos.map((a) => (
+                  <div key={a.id} className={`adjunto adjunto--${a.estado}`} title={a.nota || a.nombre}>
+                    {a.tipo === "imagen" ? <img src={a.url} alt="" /> : <span className="adjunto__icono">{ICONO[a.tipo]}</span>}
+                    <span className="adjunto__info">
+                      <span className="adjunto__nombre">{a.nombre}</span>
+                      <small>{a.estado === "subiendo" ? "Lexia lo está leyendo…" : a.estado === "error" ? (a.nota || "No se pudo leer") : a.nota ? "Leído (ver nota)" : "Listo"}</small>
+                    </span>
+                    {a.estado === "subiendo" && <span className="adjunto__carga" />}
+                    <button type="button" className="adjunto__quitar" aria-label={`Quitar ${a.nombre}`}
+                      onClick={() => setAdjuntos((l) => l.filter((x) => x.id !== a.id))}>✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <input ref={archivoRef} type="file" accept={ACEPTA} multiple hidden
+              onChange={(e) => { agregarArchivos(e.target.files); e.target.value = ""; }} />
             <div className="redactor__fila">
+              <button type="button" className="redactor__boton" onClick={() => archivoRef.current?.click()}
+                title="Adjuntar foto, video, audio o documento" aria-label="Adjuntar archivo"
+                disabled={ocupado || adjuntos.length >= MAX_ADJUNTOS}>
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M16.5 6.5v10.5a4.5 4.5 0 0 1-9 0V5a3 3 0 0 1 6 0v10.5a1.5 1.5 0 0 1-3 0V6.5H9v9a3 3 0 0 0 6 0V5a4.5 4.5 0 0 0-9 0v12a6 6 0 0 0 12 0V6.5h-1.5Z"/></svg>
+              </button>
               <button type="button" className={`redactor__boton ${modoCaso ? "activo" : ""}`}
                 onClick={() => setModoCaso((v) => !v)} title="Armar un caso" aria-label="Armar un caso" disabled={ocupado}>🗂️</button>
               <textarea
@@ -336,7 +404,7 @@ export default function App() {
                   </svg>
                 </button>
               )}
-              <button type="submit" className="redactor__enviar" disabled={ocupado || texto.trim().length < 3} aria-label="Enviar">
+              <button type="submit" className="redactor__enviar" disabled={ocupado || subiendo || (texto.trim().length < 3 && !listos.length)} aria-label="Enviar">
                 <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M3.4 20.4 21 12 3.4 3.6l-.01 6.53L15 12 3.39 13.87z" /></svg>
               </button>
             </div>
