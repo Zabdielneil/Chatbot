@@ -52,6 +52,11 @@ formación jurídica.
 8. No des asesoría jurídica personalizada; si te la piden, aclara que eres una herramienta informativa."""
 
 ARTICULO_MULTAS = 180  # define el valor de las multas generales tipo 1 a 4
+NORMA_POLICIA = "Ley 1801 de 2016"
+
+
+def misma_norma(f, frag):
+    return f["articulo"] == frag["articulo"] and f.get("norma", NORMA_POLICIA) == frag.get("norma", NORMA_POLICIA)
 
 # RF3: similitud coseno mínima (FAISS) del mejor fragmento para considerar que la pregunta es del Código.
 # Por debajo, se responde NO_ENCONTRADO sin llamar al modelo. Calibrado con evaluacion/evaluar.py.
@@ -194,7 +199,7 @@ class Motor:
         n = m.group(1)
         patron = re.compile(rf"numeral(?:es)?\b[^.]{{0,80}}\b{n}\b", re.IGNORECASE)
         return [i for i, f in enumerate(self.fragmentos)
-                if f["articulo"] == frag["articulo"] and f["tipo"] == "paragrafo" and patron.search(f["texto"])]
+                if misma_norma(f, frag) and f["tipo"] == "paragrafo" and patron.search(f["texto"])]
 
     def _numerales_del_paragrafo(self, frag, puntajes_bm25):
         """Si se recuperó un parágrafo (p. ej. la tabla de multas), trae los numerales del mismo
@@ -202,7 +207,7 @@ class Motor:
         if frag["tipo"] != "paragrafo":
             return []
         hermanos = [i for i, f in enumerate(self.fragmentos)
-                    if f["articulo"] == frag["articulo"] and f["tipo"] == "numeral" and puntajes_bm25[i] > 0]
+                    if misma_norma(f, frag) and f["tipo"] == "numeral" and puntajes_bm25[i] > 0]
         hermanos.sort(key=lambda i: puntajes_bm25[i], reverse=True)
         return hermanos[:2]
 
@@ -215,7 +220,7 @@ class Motor:
         n = m.group(1)
         fila = re.compile(rf"\bNumeral\s+{n}\b\s*(.+?)(?=\bNumeral\s+\d+\b|\(Par[áa]grafo|$)", re.IGNORECASE)
         for f in self.fragmentos:
-            if f["articulo"] == frag["articulo"] and f["tipo"] == "paragrafo":
+            if misma_norma(f, frag) and f["tipo"] == "paragrafo":
                 encontrado = fila.search(f["texto"])
                 if encontrado and re.search(r"multa|medida|suspensi|destrucci|remoci|participaci|amonestaci",
                                             encontrado.group(1), re.IGNORECASE):
@@ -264,8 +269,11 @@ class Motor:
             vistos.add(i)
             f = self.fragmentos[i]
             resultados.append({
-                "ref": f["ref"], "articulo": f["articulo"], "epigrafe": f["epigrafe"],
-                "texto": f["texto"], "vigencia": f["vigencia"],
+                "ref": f["ref"], "norma": f.get("norma", NORMA_POLICIA),
+                "articulo": f["articulo"], "epigrafe": f["epigrafe"],
+                # el numeral va con el inicio del artículo (o el grupo de multa del Art. 131 de tránsito)
+                "texto": f"{f['contexto']} … {f['texto']}" if f.get("contexto") else f["texto"],
+                "vigencia": f["vigencia"],
                 "medida_correctiva": self._medida_de_numeral(f),
                 "puntaje": round(puntaje, 4), "origen": origen,
             })
@@ -279,7 +287,7 @@ class Motor:
         # si alguna fuente menciona "multa general tipo X", se agrega el Art. 180 que define su valor
         if any(re.search(r"multa general tipo", normalizar(r["texto"])) for r in resultados):
             for j, f in enumerate(self.fragmentos):
-                if f["articulo"] == ARTICULO_MULTAS and f["tipo"] in ("inciso", "numeral", "articulo"):
+                if f["articulo"] == ARTICULO_MULTAS and f.get("norma", NORMA_POLICIA) == NORMA_POLICIA and f["tipo"] in ("inciso", "numeral", "articulo"):
                     agregar(j, 0.0, "relacionado")
         return {"fuentes": resultados, "terminos_agregados": extras, "temas": temas,
                 "similitud_max": round(similitud_max, 4)}
