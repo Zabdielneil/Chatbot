@@ -300,6 +300,9 @@ class Lexia:
 
         yield {"tipo": "estado", "texto": "Redactando la respuesta"}
         respuesta = re.sub(r"\s*【[^】]*】", "", respuesta) or NO_ENCONTRADO_GENERAL
+        # gpt-oss escribe espacios finos (U+202F, U+00A0...) y guiones no separables (U+2011); muchas fuentes
+        # los dibujan sin ancho y "el 1" se ve "el1": se cambian por espacio y guion normales
+        respuesta = re.sub(r"[     ]", " ", respuesta).replace("‑", "-")
         # solo se muestran las fuentes que la respuesta cita, o todas si no cita ninguna
         citados = {m for m in re.findall(r"Art(?:\.|ículo)\s*(\d{1,3}[A-Z]?)", respuesta, re.IGNORECASE)}
         mostradas = [f for f in fuentes if str(f["articulo"]) in citados] or fuentes

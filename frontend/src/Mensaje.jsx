@@ -10,7 +10,9 @@ marked.setOptions({ breaks: true, gfm: true });
 const RE_CITA = /((?:Ley\s+(?:1801|769)(?:\s+de\s+\d{4})?,\s*)?Art(?:\.|ículo)\s*\d{1,3}[A-Z]?(?:\s*,\s*(?:num\.|numeral|par\.|parágrafo|lit\.|literal)\s*[\w.°º]+)?)/g;
 
 function htmlDeRespuesta(texto) {
-  const html = DOMPurify.sanitize(marked.parse(texto || ""));
+  // espacios finos y guiones no separables que algunos modelos usan y la fuente dibuja sin ancho
+  const normal = (texto || "").replace(/[     ]/g, " ").replace(/‑/g, "-");
+  const html = DOMPurify.sanitize(marked.parse(normal));
   // solo se reemplaza en el texto, no dentro de etiquetas
   return html.replace(/>([^<]+)</g, (_, t) =>
     `>${t.replace(RE_CITA, (c) => {
