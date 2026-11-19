@@ -9,7 +9,7 @@ import os
 import sys
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from typing import Literal
@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from rag import Motor  # noqa: E402
 from agente import Lexia  # noqa: E402
+import adjuntos  # noqa: E402
 
 app = FastAPI(title="Motor RAG y agente Lexia - Código de Policía y Código de Tránsito",
               description="Búsqueda híbrida (FAISS + BM25 + glosario coloquial) sobre la Ley 1801 de 2016 y la "
@@ -66,7 +67,7 @@ def query(c: Consulta):
 
 class Mensaje(BaseModel):
     rol: Literal["usuario", "lexia"]
-    texto: str = Field(..., min_length=1, max_length=4000)
+    texto: str = Field(..., min_length=1, max_length=20000)
 
 
 class Conversacion(BaseModel):
@@ -87,4 +88,13 @@ def agente(c: Conversacion):
             yield f"data: {json.dumps(error, ensure_ascii=False)}\n\n"
     return StreamingResponse(eventos(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+@app.post("/adjunto")
+async def adjunto(archivo: UploadFile = File(...)):
+    """Convierte un archivo adjunto (imagen, PDF, Word, texto) en texto para Lexia. No se guarda en disco."""
+    datos = await archivo.read()
+    if len(datos) > 15 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="El archivo no puede pasar de 15 MB.")
+    return adjuntos.procesar(archivo.filename, archivo.content_type, datos, motor.cliente_llm)
 

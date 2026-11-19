@@ -32,6 +32,23 @@ data: {"tipo": "fin", "tiempo_ms": 4200, "modelo": "openai/gpt-oss-120b"}
 
 Si falla el modelo llega `{"tipo": "error", "texto": "…"}`. Los errores de validación (400), CORS (403), límite (429) y motor caído (503) son iguales a los de `/api/chat`.
 
+## `POST /api/adjunto`
+
+Convierte un archivo del chat en texto para Lexia. `multipart/form-data` con el campo `archivo` (máx. 15 MB). **No se guarda**: se procesa en memoria (Ley 1581 de 2012).
+
+| Tipo | Qué se hace |
+|---|---|
+| Imagen (jpg, png, webp…) | Modelo de visión (`LLM_MODELO_VISION`): transcribe el texto visible y describe la escena |
+| PDF | Texto de hasta 15 páginas; si es escaneado, se analiza la primera página como imagen |
+| Word (.docx), .txt, .md, .csv, .json | Texto del archivo |
+| Audio o video | Transcripción de lo que se dice con Whisper (`LLM_MODELO_AUDIO`); la imagen del video no se analiza |
+
+```json
+{ "nombre": "nota.wav", "tipo": "audio", "texto": "Transcripción de lo que se dice en el audio: Me pusieron un comparendo…", "nota": "" }
+```
+
+La interfaz agrega ese texto a la pregunta como `[ARCHIVO ADJUNTO: nombre (tipo)]` y Lexia lo analiza con la ley.
+
 ## `POST /api/chat`
 
 Responde una pregunta sobre la Ley 1801 de 2016 (RF1, RF2, RF3, RF5).

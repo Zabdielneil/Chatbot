@@ -58,6 +58,7 @@ que ya no se aplica. Si dice "modificado" o "vigente con cambios", menciónalo s
 7. Si después de buscar la respuesta no está en ninguna de las dos leyes, responde exactamente: \
 "{NO_ENCONTRADO_GENERAL}" y, si sirve, sugiere qué autoridad o norma podría resolverlo, sin inventar su contenido.
 8. Los textos ya traen el valor en pesos de 2026 entre corchetes ("[≈ $233.456 COP en 2026]"): úsalo tal cual y NUNCA hagas cálculos tú. Para otros valores usa calcular_multa. Aclara que es un valor de referencia.
+10. Si el usuario adjunta archivos, su contenido llega después de "[ARCHIVO ADJUNTO: ...]". Trátalo como hechos aportados por el usuario (por ejemplo, un comparendo o una foto de la escena) y analízalo con la ley. Si es un video que no puedes ver, pídele que describa lo que ocurre.
 9. No das asesoría jurídica personalizada ni representas a nadie: eres una herramienta informativa y educativa.
 
 FORMATO: español claro, en Markdown. Para preguntas simples, máximo unas 180 palabras: primero la respuesta \
@@ -238,19 +239,22 @@ class Lexia:
         mensajes = [{"role": "system", "content": PROMPT_LEXIA}]
         for m in historial[-12:]:
             mensajes.append({"role": "user" if m.get("rol") == "usuario" else "assistant",
-                             "content": str(m.get("texto", ""))[:4000]})
+                             "content": str(m.get("texto", ""))[:12000]})
         fuentes, vistas = [], set()
 
         # Primera búsqueda automática en ambas leyes: el modelo arranca con contexto y, en preguntas
         # simples, responde en una sola llamada. Si no le sirve, usa las herramientas para buscar más.
         pregunta = mensajes[-1]["content"]
+        # con archivos adjuntos se busca con la pregunta y el inicio del contenido, no con el documento entero
+        pregunta_sola, _, adjunto = pregunta.partition("[ARCHIVO ADJUNTO")
+        consulta_inicial = f"{pregunta_sola} {adjunto[:400]}".strip()
         yield {"tipo": "estado", "texto": "Buscando en el Código de Policía y el Código de Tránsito"}
         es_caso = bool(re.search(r"\bcaso\b", pregunta, re.IGNORECASE))
         if es_caso:
             # En un caso hay varios hechos ("se pasa un semáforo en rojo y luego se niega a identificarse"):
             # se busca cada uno por separado para no perder ninguna norma aplicable.
             descripcion = re.split(r"\bcaso\b[^:]*?(?:sobre|de|en el que|donde)?\s*:?", pregunta, maxsplit=1,
-                                   flags=re.IGNORECASE)[-1]
+                                   flags=re.IGNORECASE)[-1].split("[ARCHIVO ADJUNTO")[0]
             hechos = [h.strip() for h in re.split(r",|;|\by luego\b|\by después\b|\bluego\b|\by\s+(?=se\b|no\b|le\b)",
                                                     descripcion, flags=re.IGNORECASE) if len(h.strip()) > 12][:4]
             inicial = {"resultados": []}
@@ -263,7 +267,7 @@ class Lexia:
                         vistas.add(f["ref"])
                         fuentes.append(f)
         else:
-            inicial, nuevas = self.buscar_en_la_ley(pregunta, "ambas")
+            inicial, nuevas = self.buscar_en_la_ley(consulta_inicial, "ambas")
             for f in nuevas:
                 vistas.add(f["ref"])
                 fuentes.append(f)

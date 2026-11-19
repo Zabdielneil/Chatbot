@@ -46,7 +46,7 @@ export function crearApp({
   app.disable("x-powered-by");
   app.set("trust proxy", 1); // para que el rate limit vea la IP real detrás de un proxy en el despliegue
   app.use(helmet());
-  app.use(express.json({ limit: "100kb" }));
+  app.use(express.json({ limit: "300kb" }));
 
   // RNF3: solo los orígenes configurados pueden llamar a la API desde un navegador.
   // Las peticiones sin Origin (curl, Postman, el script de evaluación) se permiten.
@@ -153,13 +153,13 @@ export function crearApp({
         }
         const limpios = mensajes.map((m) => ({
           rol: m?.rol === "lexia" ? "lexia" : "usuario",
-          texto: typeof m?.texto === "string" ? m.texto.trim().slice(0, 4000) : "",
+          texto: typeof m?.texto === "string" ? m.texto.trim().slice(0, 12000) : "",
         }));
         const ultima = limpios[limpios.length - 1];
         if (ultima.rol !== "usuario" || ultima.texto.length < PREGUNTA_MIN) {
           throw new ErrorHttp(400, `Escribe una pregunta de al menos ${PREGUNTA_MIN} caracteres.`);
         }
-        if (ultima.texto.length > 2000) throw new ErrorHttp(400, "La pregunta no puede pasar de 2000 caracteres.");
+        if (ultima.texto.length > 12000) throw new ErrorHttp(400, "El mensaje es demasiado largo.");
 
         let r;
         try {
@@ -192,6 +192,34 @@ export function crearApp({
         res.end();
       } catch (e) {
         if (res.headersSent) return res.end();
+        next(e);
+      }
+    }
+  );
+
+  // ---------- archivos adjuntos del chat (imagen, PDF, Word, texto, audio, video) ----------
+  // Se reciben en memoria y se reenvían al motor, que los convierte en texto para Lexia.
+  // No se guardan en disco (Ley 1581 de 2012).
+  const enMemoria = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024, files: 1 } });
+  app.post(
+    "/api/adjunto",
+    limitar(limiteSubidasPorHora * 6, 3_600_000, "Demasiados archivos. Intenta más tarde."),
+    enMemoria.single("archivo"),
+    async (req, res, next) => {
+      try {
+        if (!req.file) throw new ErrorHttp(400, "Envía el archivo en el campo 'archivo'.");
+        const fd = new FormData();
+        fd.append("archivo", new Blob([req.file.buffer], { type: req.file.mimetype }), req.file.originalname);
+        let r;
+        try {
+          r = await fetch(`${motorUrl}/adjunto`, { method: "POST", body: fd, signal: AbortSignal.timeout(timeoutMotorMs * 2) });
+        } catch {
+          throw new ErrorHttp(503, `No se pudo conectar con el motor en ${motorUrl}.`);
+        }
+        const datos = await r.json().catch(() => null);
+        if (!r.ok) throw new ErrorHttp(r.status >= 500 ? 502 : r.status, mensajeDelMotor(datos));
+        res.json(datos);
+      } catch (e) {
         next(e);
       }
     }
@@ -273,7 +301,7 @@ export function crearApp({
     let mensaje = err.message;
     if (err instanceof multer.MulterError) {
       status = err.code === "LIMIT_FILE_SIZE" ? 413 : 400;
-      mensaje = err.code === "LIMIT_FILE_SIZE" ? "El PDF no puede pasar de 20 MB." : err.message;
+      mensaje = err.code === "LIMIT_FILE_SIZE" ? "El archivo es demasiado grande." : err.message;
     } else if (err.type === "entity.parse.failed") {
       status = 400;
       mensaje = "El cuerpo de la petición no es un JSON válido.";
