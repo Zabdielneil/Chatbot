@@ -245,14 +245,32 @@ class Lexia:
         # simples, responde en una sola llamada. Si no le sirve, usa las herramientas para buscar más.
         pregunta = mensajes[-1]["content"]
         yield {"tipo": "estado", "texto": "Buscando en el Código de Policía y el Código de Tránsito"}
-        inicial, nuevas = self.buscar_en_la_ley(pregunta, "ambas")
-        for f in nuevas:
-            vistas.add(f["ref"])
-            fuentes.append(f)
+        es_caso = bool(re.search(r"\bcaso\b", pregunta, re.IGNORECASE))
+        if es_caso:
+            # En un caso hay varios hechos ("se pasa un semáforo en rojo y luego se niega a identificarse"):
+            # se busca cada uno por separado para no perder ninguna norma aplicable.
+            descripcion = re.split(r"\bcaso\b[^:]*?(?:sobre|de|en el que|donde)?\s*:?", pregunta, maxsplit=1,
+                                   flags=re.IGNORECASE)[-1]
+            hechos = [h.strip() for h in re.split(r",|;|\by luego\b|\by después\b|\bluego\b|\by\s+(?=se\b|no\b|le\b)",
+                                                    descripcion, flags=re.IGNORECASE) if len(h.strip()) > 12][:4]
+            inicial = {"resultados": []}
+            for hecho in hechos or [pregunta]:
+                yield {"tipo": "estado", "texto": f"Buscando en ambos códigos: “{hecho[:70]}”"}
+                parcial, nuevas = self.buscar_en_la_ley(hecho, "ambas")
+                inicial["resultados"] += parcial["resultados"][:4]
+                for f in nuevas[:4]:
+                    if f["ref"] not in vistas:
+                        vistas.add(f["ref"])
+                        fuentes.append(f)
+        else:
+            inicial, nuevas = self.buscar_en_la_ley(pregunta, "ambas")
+            for f in nuevas:
+                vistas.add(f["ref"])
+                fuentes.append(f)
         mensajes[-1] = {"role": "user", "content": (
             f"{pregunta}\n\n[RESULTADOS INICIALES DE LA BÚSQUEDA: úsalos si responden la pregunta; si no, "
             f"busca de nuevo con otros términos. No agregues nada que no esté en los textos.]\n"
-            f"{json.dumps(inicial, ensure_ascii=False)[:3500]}")}
+            f"{json.dumps(inicial, ensure_ascii=False)[:5000 if es_caso else 3500]}")}
         extra = {"reasoning_effort": RAZONAMIENTO} if "gpt-oss" in (self.modelo or "") else {}
 
         respuesta = ""
@@ -260,7 +278,7 @@ class Lexia:
             ultima = ronda == MAX_RONDAS
             r = self.cliente.chat.completions.create(
                 model=self.modelo, messages=mensajes, temperature=0.2, max_tokens=2500,
-                tools=HERRAMIENTAS, tool_choice="none" if ultima else "auto", extra_body=extra)
+                tools=HERRAMIENTAS, extra_body=extra, tool_choice="none" if ultima else "auto")
             msg = r.choices[0].message
             llamadas = msg.tool_calls or []
             if not llamadas:
