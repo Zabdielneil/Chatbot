@@ -45,3 +45,15 @@ Salida de `python src/segmentar.py` (2026-11-12):
 | Vigencia de numerales y parágrafos | vigente 702, modificado 32, exequibilidad condicionada 3, inexequible parcial 4, inexequible 116 |
 
 Fragmentos indexados: 1.100 con la estrategia estructural y 607 con ventanas fijas de 120 palabras. Las estadísticas lingüísticas están en `motor/data/procesado/estadisticas.md`.
+
+## Corpus complementario: Código Nacional de Tránsito (Ley 769 de 2002)
+
+**Justificación.** El enunciado permite incluir otras normas si el equipo lo justifica. El docente pidió incluir el Código de Tránsito porque muchas dudas ciudadanas (multas por semáforo, licencia, SOAT, embriaguez al conducir) se rigen por esta ley y no por la 1801.
+
+**Origen.** Departamento Administrativo de la Función Pública, Gestor Normativo (https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=5557), consultado el 2026-11-19. Archivo: `motor/data/raw/Ley_769_de_2002.pdf`.
+
+**Procesamiento** (`motor/src/segmentar_transito.py`). Reutiliza la limpieza de `extraer_texto.py` y las funciones de vigencia de `segmentar.py`, con estas diferencias: los epígrafes van en mayúsculas; las notas de vigencia aparecen como frases sueltas ("Modificado por el art. 21, Ley 1383 de 2010. El nuevo texto es el siguiente:") y se separan del texto; se reconocen artículos adicionados con letra (85A, 158A); y en el Art. 131 cada código de infracción (A.1, B.10, D.4…) es una unidad cuyo contexto es la frase de su grupo con el valor de la multa (p. ej. "D. Será sancionado con multa equivalente a treinta (30) SMLDV…").
+
+**Resultados.** 174 artículos (115 vigentes y 59 con modificaciones), 161 numerales o códigos de infracción y 130 parágrafos. Salida: `motor/data/procesado/corpus_transito.json`, con el campo `norma: "Ley 769 de 2002"` en cada artículo. El índice conjunto tiene 1.565 fragmentos (estrategia estructural) y 1.014 (ventanas fijas).
+
+**Limitaciones.** La fuente solo rotula algunos títulos, por lo que varios artículos quedan sin número de título; los artículos 20, 56, 60, 63, 76, 95, 96, 112, 136A, 141, 146 y 158A quedaron sin epígrafe y deben revisarse a mano.
