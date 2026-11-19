@@ -140,6 +140,63 @@ export function crearApp({
     }
   );
 
+  // ---------- agente Lexia (Server-Sent Events) ----------
+  // Body: {"mensajes": [{"rol": "usuario"|"lexia", "texto": "..."}]}; el último es la pregunta.
+  app.post(
+    "/api/agente",
+    limitar(limiteChatPorMinuto, 60_000, "Demasiadas preguntas seguidas. Espera un minuto e intenta de nuevo."),
+    async (req, res, next) => {
+      try {
+        const mensajes = req.body?.mensajes;
+        if (!Array.isArray(mensajes) || mensajes.length === 0 || mensajes.length > 30) {
+          throw new ErrorHttp(400, "Envía 'mensajes' como una lista de 1 a 30 mensajes.");
+        }
+        const limpios = mensajes.map((m) => ({
+          rol: m?.rol === "lexia" ? "lexia" : "usuario",
+          texto: typeof m?.texto === "string" ? m.texto.trim().slice(0, 4000) : "",
+        }));
+        const ultima = limpios[limpios.length - 1];
+        if (ultima.rol !== "usuario" || ultima.texto.length < PREGUNTA_MIN) {
+          throw new ErrorHttp(400, `Escribe una pregunta de al menos ${PREGUNTA_MIN} caracteres.`);
+        }
+        if (ultima.texto.length > 2000) throw new ErrorHttp(400, "La pregunta no puede pasar de 2000 caracteres.");
+
+        let r;
+        try {
+          r = await fetch(`${motorUrl}/agente`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mensajes: limpios.filter((m) => m.texto) }),
+            signal: AbortSignal.timeout(timeoutMotorMs * 3),
+          });
+        } catch (e) {
+          throw new ErrorHttp(503, `No se pudo conectar con el motor en ${motorUrl}.`);
+        }
+        if (!r.ok) {
+          const datos = await r.json().catch(() => null);
+          throw new ErrorHttp(r.status >= 500 ? 502 : r.status, mensajeDelMotor(datos));
+        }
+        res.writeHead(200, {
+          "Content-Type": "text/event-stream; charset=utf-8",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+          "X-Accel-Buffering": "no",
+        });
+        const lector = r.body.getReader();
+        req.on("close", () => lector.cancel().catch(() => {}));
+        for (;;) {
+          const { done, value } = await lector.read();
+          if (done) break;
+          res.write(value);
+        }
+        res.end();
+      } catch (e) {
+        if (res.headersSent) return res.end();
+        next(e);
+      }
+    }
+  );
+
   // ---------- carga de PDF (RF4: no regenera los embeddings) ----------
   fs.mkdirSync(dirPendientes, { recursive: true });
   const subir = multer({

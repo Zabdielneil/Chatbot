@@ -25,6 +25,16 @@ before(async () => {
     req.on("end", () => {
       res.setHeader("Content-Type", "application/json");
       if (req.url === "/health") return res.end(JSON.stringify({ estado: "ok" }));
+      if (req.url === "/agente") {
+        const { mensajes } = JSON.parse(cuerpo);
+        res.setHeader("Content-Type", "text/event-stream");
+        res.write(`data: {"tipo":"estado","texto":"Buscando"}
+
+`);
+        return res.end(`data: ${JSON.stringify({ tipo: "respuesta", texto: `eco:${mensajes.length}:${mensajes.at(-1).texto}` })}
+
+`);
+      }
       if (modoMotor === "error_llm") {
         res.statusCode = 502;
         return res.end(JSON.stringify({ detail: "Error llamando al modelo de IA: clave inválida" }));
@@ -226,4 +236,26 @@ test("límite de peticiones devuelve 429", async () => {
   const r = await pedir();
   srv.close();
   assert.equal(r.status, 429);
+});
+
+// ---------- /api/agente ----------
+test("agente: reenvía el historial y transmite los eventos del motor", async () => {
+  const r = await fetch(`${api}/api/agente`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mensajes: [{ rol: "usuario", texto: "hola Lexia" }, { rol: "lexia", texto: "hola" }, { rol: "usuario", texto: "¿y la cédula?" }] }),
+  });
+  assert.equal(r.status, 200);
+  assert.ok(r.headers.get("content-type").includes("text/event-stream"));
+  const cuerpo = await r.text();
+  assert.ok(cuerpo.includes('"tipo":"estado"'));
+  assert.ok(cuerpo.includes("eco:3:¿y la cédula?"));
+});
+
+test("agente: valida la conversación", async () => {
+  const pedir = (body) => fetch(`${api}/api/agente`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  assert.equal((await pedir({})).status, 400);
+  assert.equal((await pedir({ mensajes: [] })).status, 400);
+  assert.equal((await pedir({ mensajes: [{ rol: "lexia", texto: "solo yo" }] })).status, 400);
+  assert.equal((await pedir({ mensajes: [{ rol: "usuario", texto: "a" }] })).status, 400);
 });

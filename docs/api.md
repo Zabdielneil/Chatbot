@@ -4,6 +4,34 @@ Base: `http://localhost:3001` (puerto en `PUERTO_BACKEND`). Todas las respuestas
 
 El motor Python tiene su propia documentación interactiva en `http://localhost:8000/docs` (FastAPI). El frontend y los clientes externos solo deben hablar con este backend.
 
+## `POST /api/agente` (lo usa la interfaz)
+
+Conversación con el agente Lexia, que busca en el Código de Policía y el Código de Tránsito, lee artículos, calcula multas y arma casos.
+
+**Cuerpo**
+
+```json
+{ "mensajes": [
+    { "rol": "usuario", "texto": "¿Me pueden pedir la cédula en la calle?" },
+    { "rol": "lexia",   "texto": "Sí, en estos casos…" },
+    { "rol": "usuario", "texto": "¿Y si me niego?" }
+] }
+```
+
+De 1 a 30 mensajes; el último debe ser del usuario (3 a 2000 caracteres).
+
+**Respuesta 200** (`text/event-stream`), un JSON por evento:
+
+```
+data: {"tipo": "estado", "texto": "Buscando en el Código de Policía: “procedimiento de identificación”"}
+data: {"tipo": "estado", "texto": "Leyendo el Artículo 35 del Código de Policía"}
+data: {"tipo": "fuentes", "fuentes": [{"ref": "Artículo 35", "norma": "Ley 1801 de 2016", "texto": "…", "vigencia": "vigente"}]}
+data: {"tipo": "respuesta", "texto": "… (Ley 1801, Art. 35, num. 3) …"}
+data: {"tipo": "fin", "tiempo_ms": 4200, "modelo": "openai/gpt-oss-120b"}
+```
+
+Si falla el modelo llega `{"tipo": "error", "texto": "…"}`. Los errores de validación (400), CORS (403), límite (429) y motor caído (503) son iguales a los de `/api/chat`.
+
 ## `POST /api/chat`
 
 Responde una pregunta sobre la Ley 1801 de 2016 (RF1, RF2, RF3, RF5).
