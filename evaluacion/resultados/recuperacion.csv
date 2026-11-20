@@ -1,0 +1,349 @@
+﻿estrategia,modo,id,tipo,esperados,recuperados,P@3,R@3,P@5,R@5,RR
+estructural,semantico,1,dominio,172 173,173 212 172,0.667,1.0,0.4,1.0,1.0
+estructural,semantico,2,dominio,180,181 185 769:131 180 769:122,0.0,0.0,0.2,1.0,0.25
+estructural,semantico,3,dominio,140,33 140 59 135,0.333,1.0,0.2,1.0,0.5
+estructural,semantico,4,dominio,222 210,219 769:135 769:142 228 27,0.0,0.0,0.0,0.0,0.0
+estructural,semantico,5,dominio,222 221,222 223 221,0.667,1.0,0.4,1.0,1.0
+estructural,semantico,6,dominio,163,163 162 79 155,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,7,dominio,182 183,183 769:122 769:140 212 769:131,0.333,0.5,0.2,0.5,1.0
+estructural,semantico,8,dominio,117 124 126 134,124 117 116 134,0.667,0.5,0.6,0.75,1.0
+estructural,semantico,9,dominio,198 204 205 206 209 210,198 20 72 168 210,0.333,0.167,0.4,0.333,1.0
+estructural,semantico,10,dominio,140,140 34 110 59 39,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,11,coloquial,140 180,769:28 769:120 769:77 769:7 769:125,0.0,0.0,0.0,0.0,0.0
+estructural,semantico,12,dominio,180,769:155 769:131 185,0.0,0.0,0.0,0.0,0.0
+estructural,semantico,13,coloquial,124,134 131 117 122 129,0.0,0.0,0.0,0.0,0.167
+estructural,semantico,14,coloquial,134 124 126 118,132 126 124 134 117,0.667,0.5,0.6,0.75,0.5
+estructural,semantico,15,dominio,126,126 134 133,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,16,coloquial,146,146 769:88 769:91 769:31,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,17,dominio,146,146 769:82 769:91 769:83 769:31,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,18,coloquial,33,769:104 769:90 769:67 769:111 769:118,0.0,0.0,0.0,0.0,0.0
+estructural,semantico,19,coloquial,27,54 205 36 769:116 769:69,0.0,0.0,0.0,0.0,0.0
+estructural,semantico,20,coloquial,27,165 166 163 29 56,0.0,0.0,0.0,0.0,0.0
+estructural,semantico,21,dominio,35,171 155 219 168 35,0.0,0.0,0.2,1.0,0.2
+estructural,semantico,22,dominio,35,159 183 155 769:129 168,0.0,0.0,0.0,0.0,0.0
+estructural,semantico,23,coloquial,35,14 68 769:28 65 35,0.0,0.0,0.2,1.0,0.2
+estructural,semantico,24,coloquial,159,159 168 163 155 157,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,25,dominio,155,155 79 80 205 769:12,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,26,coloquial,155,155 72 163 205 157,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,27,dominio,156,156 50 79 157 177,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,28,dominio,218,218 150 769:125 47 101,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,29,dominio,174,174 172 164 101 197,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,30,dominio,175,175 111 210 27 59,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,31,dominio,179,164 194 179 197 192,0.333,1.0,0.2,1.0,0.333
+estructural,semantico,32,dominio,177,177 173 135 179 79,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,33,dominio,182,182 183 185,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,34,dominio,184,184 172 769:8 769:48 769:37,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,35,dominio,223,223 222 221,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,36,dominio,204,204 198 200 205 155,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,37,dominio,206,198 206 20 16 72,0.333,1.0,0.2,1.0,0.5
+estructural,semantico,38,dominio,210,167 210 219 166 168,0.333,1.0,0.2,1.0,0.5
+estructural,semantico,39,coloquial,111,111 769:136,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,40,coloquial,111,111,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,41,dominio,101,117 124 118 132 120,0.0,0.0,0.0,0.0,0.0
+estructural,semantico,42,coloquial,100,769:141 769:72 769:102 769:51 769:127,0.0,0.0,0.0,0.0,0.071
+estructural,semantico,43,dominio,39,38 34 39 769:59,0.333,1.0,0.2,1.0,0.333
+estructural,semantico,44,dominio,38,49 39 38 769:152 34,0.333,1.0,0.2,1.0,0.333
+estructural,semantico,45,coloquial,117,117 129 122 124 134,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,46,dominio,154,154 233 27 222 223,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,47,dominio,231 232,33 231 135 206 232,0.333,0.5,0.4,1.0,0.5
+estructural,semantico,48,coloquial,95,95,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,49,coloquial,93,49 33 40 44 43,0.0,0.0,0.0,0.0,0.0
+estructural,semantico,50,dominio,135,769:34 769:35 769:40 769:144A 135,0.0,0.0,0.2,1.0,0.2
+estructural,semantico,51,coloquial,140,140 181 51 769:125 128,0.333,1.0,0.2,1.0,1.0
+estructural,semantico,52,coloquial,140,135 769:78 50 769:127 769:101,0.0,0.0,0.0,0.0,0.1
+estructural,semantico,53,inexequible,53,55 53 54 2 57,0.333,1.0,0.2,1.0,0.5
+estructural,semantico,54,inexequible,162,163 162 79,0.333,1.0,0.2,1.0,0.5
+estructural,semantico,55,dominio,769:131 769:118,769:131 769:118 769:114 769:77 769:65,0.667,1.0,0.4,1.0,1.0
+estructural,semantico,56,dominio,769:19 769:17,769:17 769:19 769:24 769:22 769:35,0.667,1.0,0.4,1.0,1.0
+estructural,semantico,65,coloquial,769:131 769:42,769:143A 769:42 769:144A 769:69 769:127,0.333,0.5,0.2,0.5,0.5
+estructural,semantico,66,dominio,769:131,769:131 769:155 183 769:102 769:157,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,1,dominio,172 173,212 223 184 38 219,0.0,0.0,0.0,0.0,0.0
+estructural,lexico,2,dominio,180,181 180 769:76 146 124,0.333,1.0,0.2,1.0,0.5
+estructural,lexico,3,dominio,140,140 135,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,4,dominio,222 210,154 218 219 769:135 769:136,0.0,0.0,0.0,0.0,0.0
+estructural,lexico,5,dominio,222 221,222 224 223 210 157,0.333,0.5,0.2,0.5,1.0
+estructural,lexico,6,dominio,163,163 162 218,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,7,dominio,182 183,769:131 135 183 174 769:163,0.333,0.5,0.2,0.5,0.333
+estructural,lexico,8,dominio,117 124 126 134,134 117 126,1.0,0.75,0.6,0.75,1.0
+estructural,lexico,9,dominio,198 204 205 206 209 210,172 3 205 171 160,0.333,0.167,0.2,0.167,0.333
+estructural,lexico,10,dominio,140,140 34 39 769:170 27,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,11,coloquial,140 180,140 100 53 32 51,0.333,0.5,0.2,0.5,1.0
+estructural,lexico,12,dominio,180,146 124 134 103 110,0.0,0.0,0.0,0.0,0.0
+estructural,lexico,13,coloquial,124,134 117 124 132 133,0.333,1.0,0.2,1.0,0.333
+estructural,lexico,14,coloquial,134 124 126 118,132 126 134 133,0.667,0.5,0.4,0.5,0.5
+estructural,lexico,15,dominio,126,126 130 134 133 132,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,16,coloquial,146,146 769:131 93 183 87,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,17,dominio,146,146 227 769:125 769:124 769:82,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,18,coloquial,33,33 175 93 199 84,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,19,coloquial,27,100 769:79 53 41 54,0.0,0.0,0.0,0.0,0.0
+estructural,lexico,20,coloquial,27,27 159 38 769:101 165,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,21,dominio,35,7 8 171 174 2,0.0,0.0,0.0,0.0,0.167
+estructural,lexico,22,dominio,35,159 184 160 157 149,0.0,0.0,0.0,0.0,0.143
+estructural,lexico,23,coloquial,35,35 769:38 65 64 769:82,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,24,coloquial,159,159 162 149 169 179,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,25,dominio,155,155 149 769:142 205 60,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,26,coloquial,155,155 149 209 157 205,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,27,dominio,156,769:127 769:144A 149 156 157,0.0,0.0,0.2,1.0,0.25
+estructural,lexico,28,dominio,218,218 219 769:135 154 769:136,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,29,dominio,174,769:123 100 101 173 74,0.0,0.0,0.0,0.0,0.077
+estructural,lexico,30,dominio,175,35 101 111 175 115,0.0,0.0,0.2,1.0,0.25
+estructural,lexico,31,dominio,179,105 173 179 140 206,0.333,1.0,0.2,1.0,0.333
+estructural,lexico,32,dominio,177,177 173 206 769:39 82,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,33,dominio,182,182 180 183 769:170,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,34,dominio,184,184 185 172 105 68,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,35,dominio,223,223 222 224 234,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,36,dominio,204,204 205 200 222 108,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,37,dominio,206,206 198 23 184 172,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,38,dominio,210,219 86 214 110 25,0.0,0.0,0.0,0.0,0.125
+estructural,lexico,39,coloquial,111,111 94 73 103 769:137,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,40,coloquial,111,111 94,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,41,dominio,101,117 101 119 134 120,0.333,1.0,0.2,1.0,0.5
+estructural,lexico,42,coloquial,100,100 769:131 769:141 769:60 769:2,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,43,dominio,39,39 38 37 49 36,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,44,dominio,38,38 39 37,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,45,coloquial,117,117 124 159 129 122,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,46,dominio,154,154 155 27 222 233,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,47,dominio,231 232,206 233 234 215 33,0.0,0.0,0.0,0.0,0.167
+estructural,lexico,48,coloquial,95,95 769:30,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,49,coloquial,93,33 53 93 40 185,0.333,1.0,0.2,1.0,0.333
+estructural,lexico,50,dominio,135,769:22 769:26 769:17 193 769:35,0.0,0.0,0.0,0.0,0.143
+estructural,lexico,51,coloquial,140,140 151 60 133 769:33,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,52,coloquial,140,140 92 100 53 54,0.333,1.0,0.2,1.0,1.0
+estructural,lexico,53,inexequible,53,55 54 53 57 7,0.333,1.0,0.2,1.0,0.333
+estructural,lexico,54,inexequible,162,163 162 218 149,0.333,1.0,0.2,1.0,0.5
+estructural,lexico,55,dominio,769:131 769:118,769:131 769:118 769:95 769:66 769:30,0.667,1.0,0.4,1.0,1.0
+estructural,lexico,56,dominio,769:19 769:17,769:22 769:26 769:17 769:131 769:24,0.333,0.5,0.2,0.5,0.333
+estructural,lexico,65,coloquial,769:131 769:42,769:42 769:17 769:42A 769:53 769:102,0.333,0.5,0.2,0.5,1.0
+estructural,lexico,66,dominio,769:131,769:53 769:52 769:51 769:131,0.0,0.0,0.2,1.0,0.25
+estructural,hibrido,1,dominio,172 173,212 219 173 223 184,0.333,0.5,0.2,0.5,0.333
+estructural,hibrido,2,dominio,180,181 769:122 180 146 124,0.333,1.0,0.2,1.0,0.333
+estructural,hibrido,3,dominio,140,140 135,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,4,dominio,222 210,219 769:135 769:147 218 769:137,0.0,0.0,0.0,0.0,0.0
+estructural,hibrido,5,dominio,222 221,222 223 224,0.333,0.5,0.2,0.5,1.0
+estructural,hibrido,6,dominio,163,163 82 177 162,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,7,dominio,182 183,183 769:131,0.333,0.5,0.2,0.5,1.0
+estructural,hibrido,8,dominio,117 124 126 134,117 134 124 133,1.0,0.75,0.6,0.75,1.0
+estructural,hibrido,9,dominio,198 204 205 206 209 210,198 20 172 3 205,0.333,0.167,0.4,0.333,1.0
+estructural,hibrido,10,dominio,140,140 34 39 38 134,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,11,coloquial,140 180,36 140 135 90 51,0.333,0.5,0.2,0.5,0.5
+estructural,hibrido,12,dominio,180,146 124 134 103 110,0.0,0.0,0.0,0.0,0.0
+estructural,hibrido,13,coloquial,124,117 131 134 129 124,0.0,0.0,0.2,1.0,0.2
+estructural,hibrido,14,coloquial,134 124 126 118,132 126 134 117,0.667,0.5,0.4,0.5,0.5
+estructural,hibrido,15,dominio,126,126 134 130 133 129,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,16,coloquial,146,146 183,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,17,dominio,146,146 769:82 769:91,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,18,coloquial,33,33 93 769:115 769:104 175,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,19,coloquial,27,769:120 769:79 36 769:127 140,0.0,0.0,0.0,0.0,0.0
+estructural,hibrido,20,coloquial,27,165 769:120 135 27 166,0.0,0.0,0.2,1.0,0.25
+estructural,hibrido,21,dominio,35,171 35 155 210 198,0.333,1.0,0.2,1.0,0.5
+estructural,hibrido,22,dominio,35,159 184 155 157 183,0.0,0.0,0.0,0.0,0.0
+estructural,hibrido,23,coloquial,35,35 14 93 769:64 769:31,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,24,coloquial,159,159 155 157 163 162,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,25,dominio,155,155 157 205 82 97,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,26,coloquial,155,155 209 157 86 149,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,27,dominio,156,156 157 769:127 155 192,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,28,dominio,218,218 219 769:135 769:147 150,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,29,dominio,174,101 174 189 194 33,0.333,1.0,0.2,1.0,0.5
+estructural,hibrido,30,dominio,175,175 111 35 101 115,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,31,dominio,179,179 173 140 164 105,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,32,dominio,177,177 173 82 163 206,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,33,dominio,182,182 183 180 769:170,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,34,dominio,184,184 172 769:8 185,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,35,dominio,223,223 222,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,36,dominio,204,204 200 205 206 769:6,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,37,dominio,206,198 206 205 23 184,0.333,1.0,0.2,1.0,0.5
+estructural,hibrido,38,dominio,210,219 210 173 86 214,0.333,1.0,0.2,1.0,0.5
+estructural,hibrido,39,coloquial,111,111,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,40,coloquial,111,111,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,41,dominio,101,117 134 120 116 101,0.0,0.0,0.2,1.0,0.2
+estructural,hibrido,42,coloquial,100,769:127 100 769:79 769:141 769:2,0.333,1.0,0.2,1.0,0.5
+estructural,hibrido,43,dominio,39,38 39 34,0.333,1.0,0.2,1.0,0.5
+estructural,hibrido,44,dominio,38,39 38 37,0.333,1.0,0.2,1.0,0.5
+estructural,hibrido,45,coloquial,117,117 129 122 134 124,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,46,dominio,154,154 27 233 222 155,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,47,dominio,231 232,206 33 232 231 234,0.333,0.5,0.4,1.0,0.333
+estructural,hibrido,48,coloquial,95,95 769:127 769:30,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,49,coloquial,93,33 40 43 44 42,0.0,0.0,0.0,0.0,0.167
+estructural,hibrido,50,dominio,135,769:35 769:17 135 769:34 769:131,0.333,1.0,0.2,1.0,0.333
+estructural,hibrido,51,coloquial,140,140 183 181 151 769:125,0.333,1.0,0.2,1.0,1.0
+estructural,hibrido,52,coloquial,140,135 140 769:127 36 90,0.333,1.0,0.2,1.0,0.5
+estructural,hibrido,53,inexequible,53,2 173 7 33 55,0.0,0.0,0.0,0.0,0.167
+estructural,hibrido,54,inexequible,162,163 157 79 150 223,0.0,0.0,0.0,0.0,0.167
+estructural,hibrido,55,dominio,769:131 769:118,769:131 769:118 769:114 769:77 769:86,0.667,1.0,0.4,1.0,1.0
+estructural,hibrido,56,dominio,769:19 769:17,769:17 769:22 769:24 769:131 769:14,0.333,0.5,0.2,0.5,1.0
+estructural,hibrido,65,coloquial,769:131 769:42,769:42 769:143A 769:146 769:17 769:144A,0.333,0.5,0.2,0.5,1.0
+estructural,hibrido,66,dominio,769:131,769:131 769:53 183 769:51 769:54,0.333,1.0,0.2,1.0,1.0
+fija,semantico,1,dominio,172 173,173 769:139 769:158 769:165 1,0.333,0.5,0.2,0.5,1.0
+fija,semantico,2,dominio,180,181 769:136 183 769:123 180,0.0,0.0,0.2,1.0,0.2
+fija,semantico,3,dominio,140,33 140 135 40 59,0.333,1.0,0.2,1.0,0.5
+fija,semantico,4,dominio,222 210,769:135 223 769:142 101 228,0.0,0.0,0.0,0.0,0.0
+fija,semantico,5,dominio,222 221,223 222 221 234 174,0.667,1.0,0.4,1.0,0.5
+fija,semantico,6,dominio,163,163 162 82 222 79,0.333,1.0,0.2,1.0,1.0
+fija,semantico,7,dominio,182 183,183 223 769:140 197 180,0.333,0.5,0.2,0.5,1.0
+fija,semantico,8,dominio,117 124 126 134,117 124 134 133 130,1.0,0.75,0.6,0.75,1.0
+fija,semantico,9,dominio,198 204 205 206 209 210,769:4 198 20 202 206,0.333,0.167,0.4,0.333,0.5
+fija,semantico,10,dominio,140,140 27 59 34 94,0.333,1.0,0.2,1.0,1.0
+fija,semantico,11,coloquial,140 180,769:28 769:125 769:120 181 769:159,0.0,0.0,0.0,0.0,0.077
+fija,semantico,12,dominio,180,769:155 183 769:131 769:156 769:122,0.0,0.0,0.0,0.0,0.143
+fija,semantico,13,coloquial,124,134 131 117 122 129,0.0,0.0,0.0,0.0,0.125
+fija,semantico,14,coloquial,134 124 126 118,132 134 117 124 130,0.333,0.25,0.4,0.5,0.5
+fija,semantico,15,dominio,126,126 134 128 117 133,0.333,1.0,0.2,1.0,1.0
+fija,semantico,16,coloquial,146,769:88 769:91 769:31 146 769:131,0.0,0.0,0.2,1.0,0.25
+fija,semantico,17,dominio,146,769:82 769:91 146 769:83 769:96,0.333,1.0,0.2,1.0,0.333
+fija,semantico,18,coloquial,33,769:104 33 769:90 769:111 769:51,0.333,1.0,0.2,1.0,0.5
+fija,semantico,19,coloquial,27,54 36 155 146 769:116,0.0,0.0,0.0,0.0,0.0
+fija,semantico,20,coloquial,27,27 165 135 166 163,0.333,1.0,0.2,1.0,1.0
+fija,semantico,21,dominio,35,171 219 155 168 222,0.0,0.0,0.0,0.0,0.167
+fija,semantico,22,dominio,35,159 74 157 79 769:129,0.0,0.0,0.0,0.0,0.0
+fija,semantico,23,coloquial,35,14 66 95 155 68,0.0,0.0,0.0,0.0,0.091
+fija,semantico,24,coloquial,159,159 157 168 79 155,0.333,1.0,0.2,1.0,1.0
+fija,semantico,25,dominio,155,155 205 769:127 769:160 185,0.333,1.0,0.2,1.0,1.0
+fija,semantico,26,coloquial,155,157 155 72 163 156,0.333,1.0,0.2,1.0,0.5
+fija,semantico,27,dominio,156,156 155 66 223 769:2,0.333,1.0,0.2,1.0,1.0
+fija,semantico,28,dominio,218,218 162 65 150 769:2,0.333,1.0,0.2,1.0,1.0
+fija,semantico,29,dominio,174,174 179 197 164 172,0.333,1.0,0.2,1.0,1.0
+fija,semantico,30,dominio,175,175 111 223 180 101,0.333,1.0,0.2,1.0,1.0
+fija,semantico,31,dominio,179,179 164 194 174 197,0.333,1.0,0.2,1.0,1.0
+fija,semantico,32,dominio,177,177 135 179 82 194,0.333,1.0,0.2,1.0,1.0
+fija,semantico,33,dominio,182,182 183 185 223 769:158A,0.333,1.0,0.2,1.0,1.0
+fija,semantico,34,dominio,184,172 769:8 769:149 185 769:9,0.0,0.0,0.0,0.0,0.143
+fija,semantico,35,dominio,223,223 222 234 221 174,0.333,1.0,0.2,1.0,1.0
+fija,semantico,36,dominio,204,204 198 200 205 769:4,0.333,1.0,0.2,1.0,1.0
+fija,semantico,37,dominio,206,769:4 206 219 20 16,0.333,1.0,0.2,1.0,0.5
+fija,semantico,38,dominio,210,219 167 168 155 210,0.0,0.0,0.2,1.0,0.2
+fija,semantico,39,coloquial,111,111 105 769:136 769:129 183,0.333,1.0,0.2,1.0,1.0
+fija,semantico,40,coloquial,111,111 135 140 769:102 191,0.333,1.0,0.2,1.0,1.0
+fija,semantico,41,dominio,101,117 134 118 124 120,0.0,0.0,0.0,0.0,0.0
+fija,semantico,42,coloquial,100,769:141 769:108 769:72 769:127 769:28,0.0,0.0,0.0,0.0,0.0
+fija,semantico,43,dominio,39,769:59 38 27 39 34,0.0,0.0,0.2,1.0,0.25
+fija,semantico,44,dominio,38,38 39 769:152 34 769:131,0.333,1.0,0.2,1.0,1.0
+fija,semantico,45,coloquial,117,117 129 122 134 118,0.333,1.0,0.2,1.0,1.0
+fija,semantico,46,dominio,154,154 233 222 223 215,0.333,1.0,0.2,1.0,1.0
+fija,semantico,47,dominio,231 232,33 231 206 223 232,0.333,0.5,0.4,1.0,0.5
+fija,semantico,48,coloquial,95,95 164 87 104 769:131,0.333,1.0,0.2,1.0,1.0
+fija,semantico,49,coloquial,93,49 44 33 93 73,0.0,0.0,0.2,1.0,0.25
+fija,semantico,50,dominio,135,769:131 135 769:40 769:34 769:2,0.333,1.0,0.2,1.0,0.5
+fija,semantico,51,coloquial,140,140 769:125 135 181 51,0.333,1.0,0.2,1.0,1.0
+fija,semantico,52,coloquial,140,769:78 135 50 769:95 769:127,0.0,0.0,0.0,0.0,0.167
+fija,semantico,53,inexequible,53,55 54 53 57 73,0.333,1.0,0.2,1.0,0.333
+fija,semantico,54,inexequible,162,162 163 79 157 222,0.333,1.0,0.2,1.0,1.0
+fija,semantico,55,dominio,769:131 769:118,769:118 769:131 769:114 769:77 769:65,0.667,1.0,0.4,1.0,1.0
+fija,semantico,56,dominio,769:19 769:17,769:17 769:19 769:24 769:35 769:18,0.667,1.0,0.4,1.0,1.0
+fija,semantico,65,coloquial,769:131 769:42,769:42 769:143A 769:143 769:26 769:144A,0.333,0.5,0.2,0.5,1.0
+fija,semantico,66,dominio,769:131,769:122 769:136A 769:155 183 769:136,0.0,0.0,0.0,0.0,0.143
+fija,lexico,1,dominio,172 173,175 223 212 197 103,0.0,0.0,0.0,0.0,0.1
+fija,lexico,2,dominio,180,181 180 769:117 149 103,0.333,1.0,0.2,1.0,0.5
+fija,lexico,3,dominio,140,135 140 32 206 124,0.333,1.0,0.2,1.0,0.5
+fija,lexico,4,dominio,222 210,223 218 769:135 219 180,0.0,0.0,0.0,0.0,0.0
+fija,lexico,5,dominio,222 221,222 224 223 157 210,0.333,0.5,0.2,0.5,1.0
+fija,lexico,6,dominio,163,163 218 149 162 206,0.333,1.0,0.2,1.0,1.0
+fija,lexico,7,dominio,182 183,183 95 182 134 180,0.667,1.0,0.4,1.0,1.0
+fija,lexico,8,dominio,117 124 126 134,134 117 133 118 124,0.667,0.5,0.6,0.75,1.0
+fija,lexico,9,dominio,198 204 205 206 209 210,172 3 171 149 211,0.0,0.0,0.0,0.0,0.083
+fija,lexico,10,dominio,140,140 34 38 85 155,0.333,1.0,0.2,1.0,1.0
+fija,lexico,11,coloquial,140 180,140 139 53 54 51,0.333,0.5,0.2,0.5,1.0
+fija,lexico,12,dominio,180,103 146 110 124 134,0.0,0.0,0.0,0.0,0.0
+fija,lexico,13,coloquial,124,132 134 124 117 133,0.333,1.0,0.2,1.0,0.333
+fija,lexico,14,coloquial,134 124 126 118,126 132 134 118 133,0.667,0.5,0.6,0.75,1.0
+fija,lexico,15,dominio,126,126 130 117 134 133,0.333,1.0,0.2,1.0,1.0
+fija,lexico,16,coloquial,146,146 769:2 180 197 769:136,0.333,1.0,0.2,1.0,1.0
+fija,lexico,17,dominio,146,146 227 769:82 769:125 769:66,0.333,1.0,0.2,1.0,1.0
+fija,lexico,18,coloquial,33,33 769:2 175 769:122 84,0.333,1.0,0.2,1.0,1.0
+fija,lexico,19,coloquial,27,41 769:2 54 33 53,0.0,0.0,0.0,0.0,0.0
+fija,lexico,20,coloquial,27,27 38 165 159 139,0.333,1.0,0.2,1.0,1.0
+fija,lexico,21,dominio,35,8 171 7 174 35,0.0,0.0,0.2,1.0,0.2
+fija,lexico,22,dominio,35,159 160 157 205 184,0.0,0.0,0.0,0.0,0.0
+fija,lexico,23,coloquial,35,35 769:38 64 65 14,0.333,1.0,0.2,1.0,1.0
+fija,lexico,24,coloquial,159,159 149 162 169 160,0.333,1.0,0.2,1.0,1.0
+fija,lexico,25,dominio,155,155 769:142 149 205 157,0.333,1.0,0.2,1.0,1.0
+fija,lexico,26,coloquial,155,155 149 198 209 157,0.333,1.0,0.2,1.0,1.0
+fija,lexico,27,dominio,156,769:127 156 769:144A 149 157,0.333,1.0,0.2,1.0,0.5
+fija,lexico,28,dominio,218,223 218 769:135 219 769:136,0.333,1.0,0.2,1.0,0.5
+fija,lexico,29,dominio,174,769:123 101 100 59 74,0.0,0.0,0.0,0.0,0.0
+fija,lexico,30,dominio,175,101 111 35 115 180,0.0,0.0,0.0,0.0,0.0
+fija,lexico,31,dominio,179,105 134 179 173 101,0.333,1.0,0.2,1.0,0.333
+fija,lexico,32,dominio,177,177 173 206 769:39 82,0.333,1.0,0.2,1.0,1.0
+fija,lexico,33,dominio,182,182 185 180 183 223,0.333,1.0,0.2,1.0,1.0
+fija,lexico,34,dominio,184,185 172 184 182 128,0.333,1.0,0.2,1.0,0.333
+fija,lexico,35,dominio,223,223 234 224 222 769:161,0.333,1.0,0.2,1.0,1.0
+fija,lexico,36,dominio,204,204 205 200 128 206,0.333,1.0,0.2,1.0,1.0
+fija,lexico,37,dominio,206,769:2 172 23 769:110 206,0.0,0.0,0.2,1.0,0.2
+fija,lexico,38,dominio,210,205 219 86 214 25,0.0,0.0,0.0,0.0,0.0
+fija,lexico,39,coloquial,111,111 94 73 103 769:137,0.333,1.0,0.2,1.0,1.0
+fija,lexico,40,coloquial,111,111 135 769:102 94 100,0.333,1.0,0.2,1.0,1.0
+fija,lexico,41,dominio,101,117 120 101 769:97 119,0.333,1.0,0.2,1.0,0.333
+fija,lexico,42,coloquial,100,769:131 769:2 769:141 100 769:127,0.0,0.0,0.2,1.0,0.25
+fija,lexico,43,dominio,39,38 39 74 34 37,0.333,1.0,0.2,1.0,0.5
+fija,lexico,44,dominio,38,38 37 39 74 43,0.333,1.0,0.2,1.0,1.0
+fija,lexico,45,coloquial,117,117 124 129 140 122,0.333,1.0,0.2,1.0,1.0
+fija,lexico,46,dominio,154,154 222 233 27 155,0.333,1.0,0.2,1.0,1.0
+fija,lexico,47,dominio,231 232,234 33 233 232 215,0.0,0.0,0.2,0.5,0.25
+fija,lexico,48,coloquial,95,95 769:127 769:104 769:131 135,0.333,1.0,0.2,1.0,1.0
+fija,lexico,49,coloquial,93,40 33 53 93 43,0.0,0.0,0.2,1.0,0.25
+fija,lexico,50,dominio,135,769:17 193 769:35 769:151 769:26,0.0,0.0,0.0,0.0,0.167
+fija,lexico,51,coloquial,140,140 151 769:131 60 133,0.333,1.0,0.2,1.0,1.0
+fija,lexico,52,coloquial,140,140 92 54 50 53,0.333,1.0,0.2,1.0,1.0
+fija,lexico,53,inexequible,53,55 54 57 53 5,0.0,0.0,0.2,1.0,0.25
+fija,lexico,54,inexequible,162,162 149 163 218 219,0.333,1.0,0.2,1.0,1.0
+fija,lexico,55,dominio,769:131 769:118,769:131 769:118 769:2 769:95 769:66,0.667,1.0,0.4,1.0,1.0
+fija,lexico,56,dominio,769:19 769:17,769:26 769:22 769:17 769:24 769:14,0.333,0.5,0.2,0.5,0.333
+fija,lexico,65,coloquial,769:131 769:42,769:42 769:42A 769:17 769:53 769:143A,0.333,0.5,0.2,0.5,1.0
+fija,lexico,66,dominio,769:131,769:53 769:52 769:51 769:131 769:46,0.0,0.0,0.2,1.0,0.25
+fija,hibrido,1,dominio,172 173,212 197 218 196 172,0.0,0.0,0.2,0.5,0.2
+fija,hibrido,2,dominio,180,181 180 769:122 183 103,0.333,1.0,0.2,1.0,0.5
+fija,hibrido,3,dominio,140,135 140 24 174 179,0.333,1.0,0.2,1.0,0.5
+fija,hibrido,4,dominio,222 210,223 769:135 219 769:147 218,0.0,0.0,0.0,0.0,0.0
+fija,hibrido,5,dominio,222 221,222 223 224 234 210,0.333,0.5,0.2,0.5,1.0
+fija,hibrido,6,dominio,163,163 82 177 159 222,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,7,dominio,182 183,183 180 182 769:136 137,0.667,1.0,0.4,1.0,1.0
+fija,hibrido,8,dominio,117 124 126 134,117 134 124 133 130,1.0,0.75,0.6,0.75,1.0
+fija,hibrido,9,dominio,198 204 205 206 209 210,198 171 10 184 20,0.333,0.167,0.2,0.167,1.0
+fija,hibrido,10,dominio,140,140 34 33 39 41,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,11,coloquial,140 180,140 36 135 51 769:125,0.333,0.5,0.2,0.5,1.0
+fija,hibrido,12,dominio,180,103 183 146 110 124,0.0,0.0,0.0,0.0,0.091
+fija,hibrido,13,coloquial,124,117 132 134 131 118,0.0,0.0,0.0,0.0,0.167
+fija,hibrido,14,coloquial,134 124 126 118,132 134 126 118 129,0.667,0.5,0.6,0.75,0.5
+fija,hibrido,15,dominio,126,126 117 130 133 134,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,16,coloquial,146,146 769:131 769:136 769:2 769:88,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,17,dominio,146,769:82 146 769:125 769:2 769:105,0.333,1.0,0.2,1.0,0.5
+fija,hibrido,18,coloquial,33,33 769:122 769:104 769:86 769:2,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,19,coloquial,27,36 769:127 769:120 140 769:79,0.0,0.0,0.0,0.0,0.0
+fija,hibrido,20,coloquial,27,27 165 140 135 38,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,21,dominio,35,171 35 206 155 227,0.333,1.0,0.2,1.0,0.5
+fija,hibrido,22,dominio,35,159 184 157 155 769:38,0.0,0.0,0.0,0.0,0.0
+fija,hibrido,23,coloquial,35,14 769:129 235 769:64 769:31,0.0,0.0,0.0,0.0,0.111
+fija,hibrido,24,coloquial,159,159 155 184 157 169,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,25,dominio,155,155 205 157 82 179,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,26,coloquial,155,155 157 205 222 149,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,27,dominio,156,156 157 769:127 155 769:144A,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,28,dominio,218,218 223 219 769:135 769:2,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,29,dominio,174,100 174 194 189 101,0.333,1.0,0.2,1.0,0.5
+fija,hibrido,30,dominio,175,111 35 101 180 115,0.0,0.0,0.0,0.0,0.167
+fija,hibrido,31,dominio,179,179 105 140 164 134,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,32,dominio,177,177 82 173 179 206,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,33,dominio,182,182 183 185 180 223,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,34,dominio,184,172 185 184 769:8 128,0.333,1.0,0.2,1.0,0.333
+fija,hibrido,35,dominio,223,223 234 224 222,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,36,dominio,204,204 200 205 206 214,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,37,dominio,206,769:2 206 198 769:148 207,0.333,1.0,0.2,1.0,0.5
+fija,hibrido,38,dominio,210,219 210 20 171 184,0.333,1.0,0.2,1.0,0.5
+fija,hibrido,39,coloquial,111,111 135 223 105 769:136,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,40,coloquial,111,111 135 769:102 140 769:127,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,41,dominio,101,117 120 134 769:97 116,0.0,0.0,0.0,0.0,0.125
+fija,hibrido,42,coloquial,100,769:127 769:141 769:79 769:2 769:131,0.0,0.0,0.0,0.0,0.167
+fija,hibrido,43,dominio,39,38 39 34 92 37,0.333,1.0,0.2,1.0,0.5
+fija,hibrido,44,dominio,38,38 39 34 37 49,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,45,coloquial,117,117 129 122 124 134,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,46,dominio,154,154 233 222 155 149,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,47,dominio,231 232,33 206 232 231 234,0.333,0.5,0.4,1.0,0.333
+fija,hibrido,48,coloquial,95,95 769:127 769:131 164 769:104,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,49,coloquial,93,33 40 43 44 93,0.0,0.0,0.2,1.0,0.2
+fija,hibrido,50,dominio,135,135 769:35 769:34 193 769:17,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,51,coloquial,140,140 769:122 769:125 135 151,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,52,coloquial,140,140 769:127 135 36 226,0.333,1.0,0.2,1.0,1.0
+fija,hibrido,53,inexequible,53,33 7 2 173 55,0.0,0.0,0.0,0.0,0.143
+fija,hibrido,54,inexequible,162,163 157 218 150 79,0.0,0.0,0.0,0.0,0.0
+fija,hibrido,55,dominio,769:131 769:118,769:118 769:131 769:77 769:114 769:86,0.667,1.0,0.4,1.0,1.0
+fija,hibrido,56,dominio,769:19 769:17,769:24 769:22 769:17 769:18 769:26,0.333,0.5,0.2,0.5,0.333
+fija,hibrido,65,coloquial,769:131 769:42,769:42 769:143A 769:42A 769:143 769:17,0.333,0.5,0.2,0.5,1.0
+fija,hibrido,66,dominio,769:131,769:122 769:131 769:53 183 769:51,0.333,1.0,0.2,1.0,0.5

@@ -18,6 +18,16 @@ import numpy as np
 
 BASE = Path(__file__).resolve().parents[1]
 CORPUS = BASE / "data" / "procesado" / "corpus.json"
+# corpus complementario (si existe): Código Nacional de Tránsito
+CORPUS_TRANSITO = BASE / "data" / "procesado" / "corpus_transito.json"
+NORMA_POLICIA = "Ley 1801 de 2016"
+NOMBRE_NORMA = {NORMA_POLICIA: "Código de Policía", "Ley 769 de 2002": "Código de Tránsito"}
+
+
+def prefijo(art):
+    """Las citas de la Ley 1801 quedan como antes ("Artículo 140"); las demás llevan la ley."""
+    norma = art.get("norma", NORMA_POLICIA)
+    return "" if norma == NORMA_POLICIA else f"{norma}, "
 DIR_INDICE = BASE / "data" / "indice"
 
 MODELO_POR_DEFECTO = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
@@ -30,11 +40,13 @@ SOLAPE = 30
 def cabecera(art):
     """Texto corto que se antepone a cada fragmento para que el embedding sepa de qué artículo viene."""
     epi = f". {art['epigrafe']}" if art.get("epigrafe") else ""
-    return f"Artículo {art['articulo']}{epi}."
+    norma = art.get("norma", NORMA_POLICIA)
+    return f"{NOMBRE_NORMA.get(norma, norma)}, Artículo {art['articulo']}{epi}."
 
 
 def base_fragmento(art):
     return {
+        "norma": art.get("norma", NORMA_POLICIA),
         "articulo": art["articulo"],
         "epigrafe": art.get("epigrafe", ""),
         "libro": art.get("libro"),
@@ -56,25 +68,30 @@ def fragmentos_estructurales(articulos):
         numerales = art.get("numerales", [])
         paragrafos = art.get("paragrafos", [])
 
+        # cada fragmento lleva la vigencia de su propia unidad (un numeral puede ser inexequible
+        # aunque el resto del artículo siga vigente); si el corpus no la trae, se usa la del artículo
+        vig_art = art.get("vigencia", "vigente")
+        vig_inciso = art.get("inciso_vigencia", vig_art)
+
         if not numerales and not paragrafos:
-            frags.append({**base_fragmento(art), "tipo": "articulo",
-                          "ref": f"Artículo {art['articulo']}",
+            frags.append({**base_fragmento(art), "tipo": "articulo", "vigencia": vig_inciso,
+                          "ref": f"{prefijo(art)}Artículo {art['articulo']}",
                           "texto": art.get("texto", "")})
             continue
 
         if inciso:
-            frags.append({**base_fragmento(art), "tipo": "inciso",
-                          "ref": f"Artículo {art['articulo']}", "texto": inciso})
+            frags.append({**base_fragmento(art), "tipo": "inciso", "vigencia": vig_inciso,
+                          "ref": f"{prefijo(art)}Artículo {art['articulo']}", "texto": inciso})
         # a cada numeral le pegamos el inicio del inciso para que no pierda el contexto
         # (ej. "Los siguientes comportamientos afectan... : 4. Orinar en la vía pública")
         intro = " ".join(inciso.split()[:40])
         for n in numerales:
-            frags.append({**base_fragmento(art), "tipo": "numeral",
-                          "ref": f"Artículo {art['articulo']}, numeral {n['numeral']}",
-                          "texto": n["texto"], "contexto": intro})
+            frags.append({**base_fragmento(art), "tipo": "numeral", "vigencia": n.get("vigencia", vig_art),
+                          "ref": f"{prefijo(art)}Artículo {art['articulo']}, numeral {n['numeral']}",
+                          "texto": n["texto"], "contexto": n.get("grupo") or intro})
         for p in paragrafos:
-            frags.append({**base_fragmento(art), "tipo": "paragrafo",
-                          "ref": f"Artículo {art['articulo']}, parágrafo {p['paragrafo']}",
+            frags.append({**base_fragmento(art), "tipo": "paragrafo", "vigencia": p.get("vigencia", vig_art),
+                          "ref": f"{prefijo(art)}Artículo {art['articulo']}, parágrafo {p['paragrafo']}",
                           "texto": p["texto"]})
 
     for f in frags:
@@ -94,7 +111,7 @@ def fragmentos_fijos(articulos, ventana=VENTANA, solape=SOLAPE):
         for i, ini in enumerate(range(0, max(len(palabras) - solape, 1), paso)):
             trozo = " ".join(palabras[ini:ini + ventana])
             frags.append({**base_fragmento(art), "tipo": "ventana",
-                          "ref": f"Artículo {art['articulo']} (fragmento {i + 1})",
+                          "ref": f"{prefijo(art)}Artículo {art['articulo']} (fragmento {i + 1})",
                           "texto": trozo})
     for f in frags:
         f["texto_embedding"] = f"{cabecera(f)} {f['texto']}"
@@ -159,7 +176,11 @@ def main():
     if not CORPUS.exists():
         raise SystemExit(f"No existe {CORPUS}. Primero corran extraer_texto.py y segmentar.py")
     articulos = json.loads(CORPUS.read_text(encoding="utf-8"))["articulos"]
-    print(f"Corpus: {len(articulos)} artículos")
+    print(f"Corpus Ley 1801: {len(articulos)} artículos")
+    if CORPUS_TRANSITO.exists():
+        transito = json.loads(CORPUS_TRANSITO.read_text(encoding="utf-8"))["articulos"]
+        print(f"Corpus Ley 769 (tránsito): {len(transito)} artículos")
+        articulos += transito
 
     modelo = cargar_modelo(args.modelo)
     estrategias = list(ESTRATEGIAS) if args.estrategia == "todas" else [args.estrategia]

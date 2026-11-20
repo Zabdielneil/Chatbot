@@ -103,3 +103,32 @@ Las dos se construyen con `python src/indexar.py --estrategia todas` y se compar
 - Clasificador temático para filtrar por libro o título antes de buscar.
 - Frontend en React con panel de fuentes.
 - Banco de 50 preguntas y evaluación con métricas.
+
+## Agente Lexia (versión 2)
+
+El docente pidió que el chatbot fuera más autónomo, pudiera **armar casos** y cubriera también el **Código de Tránsito**. Por eso, además del RAG de una sola búsqueda (`/query`), el motor tiene un agente con herramientas (`motor/src/agente.py`, endpoint `/agente`):
+
+```mermaid
+flowchart LR
+    U([Ciudadano]) --> FE[Frontend · Lexia]
+    FE -- "POST /api/agente (historial)" --> BE[Backend Node]
+    BE -- "SSE" --> AG
+    subgraph AG[Agente Lexia · motor Python]
+        LLM[[Modelo con tool calling<br/>Groq openai/gpt-oss-120b]]
+        T1[buscar_en_la_ley<br/>híbrido FAISS + BM25<br/>policía / tránsito / ambas]
+        T2[leer_articulo<br/>texto completo + vigencia]
+        T3[calcular_multa<br/>SMDLV → COP 2026]
+        LLM <--> T1
+        LLM <--> T2
+        LLM <--> T3
+    end
+    T1 --> IDX[(FAISS + BM25<br/>Ley 1801 + Ley 769)]
+```
+
+**Cómo decide.** El modelo recibe el prompt de Lexia (personalidad, reglas de citación, vigencia y reglas para construir casos) y el historial del chat. En cada ronda puede llamar herramientas; el motor las ejecuta y le devuelve el resultado. Así puede reformular una búsqueda que no sirvió ("pedir la cédula" → "procedimiento de identificación"), buscar en la otra ley, leer un artículo completo o calcular el valor de una multa. Se limita a `AGENTE_MAX_RONDAS` (5) rondas para cumplir el RNF1; en la última ronda se obliga al modelo a responder.
+
+**Streaming.** El endpoint responde como Server-Sent Events: `estado` (qué está haciendo: "Buscando en el Código de Tránsito…"), `fuentes`, `respuesta` y `fin`. La interfaz muestra esos pasos en vivo y anima el avatar mientras Lexia trabaja.
+
+**Casos.** Cuando el usuario pide un caso, Lexia construye un escenario hipotético con secciones (hechos, problema jurídico, normas aplicables, análisis, consecuencias, derechos y recursos, conclusión), marca los elementos ficticios y cierra con el aviso "caso hipotético con fines educativos". Esto respeta el alcance del enunciado, que excluye la asesoría jurídica personalizada.
+
+**Por qué Groq.** Es gratuito, rápido y compatible con el cliente de OpenAI; cambiar a OpenAI solo requiere modificar `LLM_BASE_URL`, `LLM_MODELO` y `LLM_API_KEY` en el `.env`.

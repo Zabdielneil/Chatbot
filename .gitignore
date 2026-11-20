@@ -6,3 +6,4 @@ node_modules/
 # se regeneran con los scripts
 motor/data/indice/
 motor/data/pendientes/
+dist/

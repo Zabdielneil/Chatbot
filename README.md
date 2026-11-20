@@ -1,13 +1,15 @@
-# Chatbot Código Nacional de Seguridad y Convivencia Ciudadana
+# Lexia · Asistente jurídico del Código de Policía y el Código de Tránsito
 
-Chatbot con arquitectura RAG que responde preguntas sobre la Ley 1801 de 2016 citando los artículos.
+Chatbot con arquitectura RAG y un **agente de IA (Lexia)** que responde preguntas y **arma casos** sobre el
+Código Nacional de Seguridad y Convivencia Ciudadana (**Ley 1801 de 2016**) y el Código Nacional de Tránsito
+Terrestre (**Ley 769 de 2002**, corpus complementario solicitado por el docente), citando los artículos.
 
 ```
 motor/      Python: corpus, análisis lingüístico, embeddings, FAISS, RAG y API (FastAPI)
-backend/    Node.js + Express: API pública, CORS, /api/chat, /upload_pdf/
-frontend/   React + Vite: interfaz de chat (pendiente)
-evaluacion/ banco de preguntas y métricas (pendiente)
-docs/       corpus.md, arquitectura.md
+backend/    Node.js + Express: API pública, CORS, rate limit, /api/chat, /upload_pdf/ (con pruebas)
+frontend/   React + Vite: chat con Lexia (avatar animado, pasos del agente, fuentes, modo caso, aviso legal)
+evaluacion/ banco de 64 preguntas, script de métricas y reporte
+docs/       corpus.md, arquitectura.md, api.md
 ```
 
 Arquitectura completa: [docs/arquitectura.md](docs/arquitectura.md)
@@ -42,6 +44,7 @@ Copiar `.env.example` como `.env` en la raíz del repo y poner la `LLM_API_KEY`.
 python src/extraer_texto.py data/raw/Ley_1801_de_2016.pdf
 python src/segmentar.py --fuente "Función Pública - Gestor Normativo" --url "URL_DE_DESCARGA" --fecha 2026-11-12
 python src/estadisticas.py
+python src/segmentar_transito.py data/raw/Ley_769_de_2002.pdf --fecha 2026-11-19   # corpus de tránsito
 ```
 
 Salidas en `motor/data/procesado/`: `ley1801_limpio.txt`, `corpus.json`, `estadisticas.md` y `estadisticas.json`.
@@ -54,7 +57,12 @@ python src/indexar.py --estrategia todas
 
 Genera `data/indice/estructural.faiss` y `data/indice/fija.faiss` con sus fragmentos. La primera vez descarga el modelo de embeddings (~470 MB).
 
-## 4. Probar el RAG en la terminal (desde `motor/`)
+## 4. Probar el RAG y el agente en la terminal (desde `motor/`)
+
+```bash
+python src/agente.py "¿Cuándo me puede pedir la cédula un policía en la calle?"   # agente Lexia (necesita LLM_API_KEY)
+```
+
 
 ```bash
 python src/rag.py "¿Qué es una orden de comparendo?" --solo-buscar    # solo FAISS
@@ -69,16 +77,36 @@ uvicorn src.api:app --reload --port 8000        # docs en http://localhost:8000/
 
 # terminal 2 – backend (desde backend/)
 npm run dev                                     # http://localhost:3001
+
+# terminal 3 – frontend (desde frontend/)
+npm install                                     # solo la primera vez
+npm run dev                                     # http://localhost:5173
 ```
+
+Para trabajar solo el frontend sin motor ni backend, pongan `VITE_DEMO=true` en el `.env`: el chat responde con datos de ejemplo marcados como MODO DEMO.
 
 Endpoints del backend:
 
 | Método | Ruta | Qué hace |
 |---|---|---|
+| POST | `/api/agente` | Body `{"mensajes": [{"rol": "usuario", "texto": "..."}]}` → agente Lexia por Server-Sent Events (estado, fuentes, respuesta) |
 | POST | `/api/chat` | Body `{"pregunta": "...", "k": 5}` → respuesta, fuentes y tiempo |
 | POST | `/upload_pdf/` | Form-data con campo `archivo` (PDF). Lo guarda sin reindexar |
+| GET | `/api/pendientes` | Lista los PDF cargados que esperan indexación |
 | GET | `/api/health` | Estado del backend y del motor |
+
+Detalle de cada endpoint, códigos de error y seguridad: [docs/api.md](docs/api.md). Pruebas del backend: `cd backend && npm test`.
 
 ## Variables de entorno
 
 Ver `.env.example`. El archivo `.env` no se sube al repositorio.
+
+## 6. Evaluación (desde la raíz del repo, con el .venv del motor activo)
+
+```bash
+python evaluacion/evaluar.py                  # recuperación: Precisión@k, Recall@k, MRR y umbral de fuera de dominio
+python evaluacion/evaluar.py --respuestas     # además genera respuestas con el modelo (necesita LLM_API_KEY)
+```
+
+Usa `evaluacion/banco_preguntas.json` (64 preguntas: 54 con artículos esperados y 10 fuera de dominio) y deja `reporte.md`, `recuperacion.csv` y `respuestas.csv` en `evaluacion/resultados/`.
+
