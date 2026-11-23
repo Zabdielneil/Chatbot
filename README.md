@@ -110,3 +110,12 @@ python evaluacion/evaluar.py --respuestas     # además genera respuestas con el
 
 Usa `evaluacion/banco_preguntas.json` (64 preguntas: 54 con artículos esperados y 10 fuera de dominio) y deja `reporte.md`, `recuperacion.csv` y `respuestas.csv` en `evaluacion/resultados/`.
 
+## 👩‍💻 Integrantes
+
+1. Laura Valentina González Rojas
+2. Valery Teherán Bernet
+3. Samith Nieto
+
+**Materia:** Inteligencia Artificial
+**Universidad:** Universidad Manuela Beltrán · Bogotá, Colombia
+**Año:** 2026
